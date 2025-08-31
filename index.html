@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedPrep Tracker - Interactive Health Monitoring</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="animated-bg">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+        <div class="floating-particles">
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+        </div>
+    </div>
+
+    <!-- Header with Glassmorphism -->
+    <header class="header">
+        <div class="container">
+            <div class="logo-section">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 50 50" class="heartbeat-icon">
+                        <path d="M25 45 C25 45 5 25 5 15 C5 5 15 5 25 15 C35 5 45 5 45 15 C45 25 25 45 25 45 Z" fill="currentColor"/>
+                        <line x1="10" y1="25" x2="40" y2="25" stroke="currentColor" stroke-width="2" class="heartbeat-line"/>
+                        <polyline points="15,25 20,15 25,35 30,10 35,25" stroke="currentColor" stroke-width="2" fill="none" class="heartbeat-pulse"/>
+                    </svg>
+                </div>
+                <div class="logo-text">
+                    <h1>MedPrep Tracker</h1>
+                    <p>Smart symptom tracking for better healthcare</p>
+                </div>
+            </div>
+            <div class="disclaimer">
+                <div class="disclaimer-icon">⚕️</div>
+                <span><strong>Medical Tool Only:</strong> This tracks symptoms for your records. Always consult healthcare professionals for medical advice.</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation with Modern Pills -->
+    <nav class="nav-container">
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="switchTab('tracker')" data-tab="tracker">
+                <span class="tab-icon">🎯</span>
+                <span>Body Map</span>
+            </button>
+            <button class="tab-btn" onclick="switchTab('history')" data-tab="history">
+                <span class="tab-icon">📊</span>
+                <span>History</span>
+            </button>
+            <button class="tab-btn" onclick="switchTab('appointment')" data-tab="appointment">
+                <span class="tab-icon">📋</span>
+                <span>Appointment</span>
+            </button>
+            <button class="tab-btn" onclick="switchTab('reports')" data-tab="reports">
+                <span class="tab-icon">📄</span>
+                <span>Reports</span>
+            </button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Body Map Tracker Tab -->
+        <div id="tracker" class="tab-content active">
+            <div class="tracker-grid">
+                <!-- Interactive Body Map -->
+                <div class="body-map-card">
+                    <div class="card-header">
+                        <h2>Where are you experiencing symptoms?</h2>
+                        <p>Click on any body region to log a symptom</p>
+                    </div>
+                    
+                    <div class="body-diagram" id="body-diagram">
+                        <!-- Replace the SVG section in your index.html with this more realistic body -->
+                        <svg viewBox="0 0 400 700" class="body-svg">
+                            <!-- Head (more realistic shape) -->
+                            <path d="M 200 30 
+                                    C 230 30 250 50 250 80 
+                                    C 250 95 245 105 240 110
+                                    C 235 115 225 120 200 120
+                                    C 175 120 165 115 160 110
+                                    C 155 105 150 95 150 80
+                                    C 150 50 170 30 200 30 Z" 
+                                class="body-part hoverable" data-region="head" />
+                            <text x="200" y="75" class="body-label">Head</text>
+                            
+                            <!-- Neck -->
+                            <rect x="185" y="115" width="30" height="25" rx="8" class="body-part hoverable" data-region="neck" />
+                            <text x="200" y="130" class="body-label small">Neck</text>
+                            
+                            <!-- Shoulders -->
+                            <ellipse cx="155" cy="155" rx="20" ry="15" class="body-part hoverable" data-region="left-shoulder" />
+                            <ellipse cx="245" cy="155" rx="20" ry="15" class="body-part hoverable" data-region="right-shoulder" />
+                            <text x="155" y="160" class="body-label small">L.Shoulder</text>
+                            <text x="245" y="160" class="body-label small">R.Shoulder</text>
+                            
+                            <!-- Upper Arms -->
+                            <ellipse cx="135" cy="190" rx="15" ry="35" class="body-part hoverable" data-region="left-upper-arm" />
+                            <ellipse cx="265" cy="190" rx="15" ry="35" class="body-part hoverable" data-region="right-upper-arm" />
+                            
+                            <!-- Elbows -->
+                            <circle cx="135" cy="225" r="12" class="body-part hoverable" data-region="left-elbow" />
+                            <circle cx="265" cy="225" r="12" class="body-part hoverable" data-region="right-elbow" />
+                            
+                            <!-- Forearms -->
+                            <ellipse cx="135" cy="260" rx="12" ry="35" class="body-part hoverable" data-region="left-forearm" />
+                            <ellipse cx="265" cy="260" rx="12" ry="35" class="body-part hoverable" data-region="right-forearm" />
+                            
+                            <!-- Hands -->
+                            <ellipse cx="135" cy="300" rx="10" ry="20" class="body-part hoverable" data-region="left-hand" />
+                            <ellipse cx="265" cy="300" rx="10" ry="20" class="body-part hoverable" data-region="right-hand" />
+                            <text x="135" y="305" class="body-label small">L.Hand</text>
+                            <text x="265" y="305" class="body-label small">R.Hand</text>
+                            
+                            <!-- Torso (realistic chest shape) -->
+                            <path d="M 170 140
+                                    C 170 140 170 150 175 155
+                                    L 175 180
+                                    C 175 190 180 200 185 205
+                                    L 215 205
+                                    C 220 200 225 190 225 180
+                                    L 225 155
+                                    C 230 150 230 140 230 140
+                                    C 235 145 240 150 240 160
+                                    L 240 200
+                                    C 240 210 235 220 225 225
+                                    L 175 225
+                                    C 165 220 160 210 160 200
+                                    L 160 160
+                                    C 160 150 165 145 170 140 Z" 
+                                class="body-part hoverable" data-region="chest" />
+                            <text x="200" y="190" class="body-label">Chest</text>
+                            
+                            <!-- Abdomen (realistic belly shape) -->
+                            <ellipse cx="200" cy="260" rx="60" ry="35" class="body-part hoverable" data-region="abdomen" />
+                            <text x="200" y="265" class="body-label">Abdomen</text>
+                            
+                            <!-- Lower Back -->
+                            <ellipse cx="200" cy="300" rx="50" ry="20" class="body-part hoverable" data-region="lower-back" />
+                            <text x="200" y="305" class="body-label">Lower Back</text>
+                            
+                            <!-- Pelvis/Hips -->
+                            <path d="M 160 320
+                                    C 155 325 155 335 160 340
+                                    L 180 345
+                                    L 220 345
+                                    C 240 345 245 335 245 325
+                                    C 245 320 240 320 235 322
+                                    L 165 322
+                                    C 160 320 160 320 160 320 Z"
+                                class="body-part hoverable" data-region="pelvis" />
+                            <text x="200" y="335" class="body-label">Pelvis</text>
+                            
+                            <!-- Thighs -->
+                            <ellipse cx="175" cy="400" rx="20" ry="50" class="body-part hoverable" data-region="left-thigh" />
+                            <ellipse cx="225" cy="400" rx="20" ry="50" class="body-part hoverable" data-region="right-thigh" />
+                            <text x="175" y="405" class="body-label small">L.Thigh</text>
+                            <text x="225" y="405" class="body-label small">R.Thigh</text>
+                            
+                            <!-- Knees -->
+                            <circle cx="175" cy="450" r="15" class="body-part hoverable" data-region="left-knee" />
+                            <circle cx="225" cy="450" r="15" class="body-part hoverable" data-region="right-knee" />
+                            <text x="175" y="455" class="body-label small">L.Knee</text>
+                            <text x="225" y="455" class="body-label small">R.Knee</text>
+                            
+                            <!-- Calves -->
+                            <ellipse cx="175" cy="500" rx="18" ry="45" class="body-part hoverable" data-region="left-calf" />
+                            <ellipse cx="225" cy="500" rx="18" ry="45" class="body-part hoverable" data-region="right-calf" />
+                            <text x="175" y="505" class="body-label small">L.Calf</text>
+                            <text x="225" y="505" class="body-label small">R.Calf</text>
+                            
+                            <!-- Ankles -->
+                            <circle cx="175" cy="545" r="10" class="body-part hoverable" data-region="left-ankle" />
+                            <circle cx="225" cy="545" r="10" class="body-part hoverable" data-region="right-ankle" />
+                            
+                            <!-- Feet -->
+                            <ellipse cx="175" cy="570" rx="12" ry="25" class="body-part hoverable" data-region="left-foot" />
+                            <ellipse cx="225" cy="570" rx="12" ry="25" class="body-part hoverable" data-region="right-foot" />
+                            <text x="175" y="575" class="body-label small">L.Foot</text>
+                            <text x="225" y="575" class="body-label small">R.Foot</text>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Enhanced Symptom Input Form -->
+                <div class="symptom-form-card">
+                    <div id="symptom-form" class="symptom-form" style="display: none;">
+                        <div class="form-header">
+                            <h3>Log Symptom Details</h3>
+                            <div class="selected-region-display" id="region-display"></div>
+                        </div>
+                        
+                        <div class="form-body">
+                            <div class="form-group">
+                                <label class="form-label">Symptom Type</label>
+                                <select id="symptom-type" class="form-input">
+                                    <option value="">Select type...</option>
+                                    <option value="pain">Pain</option>
+                                    <option value="ache">Ache</option>
+                                    <option value="stiffness">Stiffness</option>
+                                    <option value="swelling">Swelling</option>
+                                    <option value="numbness">Numbness</option>
+                                    <option value="tingling">Tingling</option>
+                                    <option value="nausea">Nausea</option>
+                                    <option value="fatigue">Fatigue</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Description</label>
+                                <input type="text" id="symptom-description" class="form-input" placeholder="e.g., sharp stabbing pain, dull headache">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Severity</label>
+                                <div class="severity-slider">
+                                    <input type="range" id="severity" min="1" max="10" value="5" class="slider">
+                                    <div class="severity-display">
+                                        <span class="severity-number" id="severity-display">5</span>
+                                        <span class="severity-label">Moderate</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">When did it start?</label>
+                                <input type="datetime-local" id="symptom-time" class="form-input">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Additional notes</label>
+                                <textarea id="symptom-notes" class="form-textarea" placeholder="Any triggers, patterns, or other details..."></textarea>
+                            </div>
+                            
+                            <div class="form-actions">
+                                <button class="btn-primary" onclick="saveSymptom()">
+                                    <span class="btn-icon">💾</span>
+                                    Log Symptom
+                                </button>
+                                <button class="btn-secondary" onclick="clearForm()">Clear</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="instruction-text" class="instruction-card">
+                        <div class="instruction-icon">👆</div>
+                        <h3>Get Started</h3>
+                        <p>Click on any body part to begin logging your symptoms</p>
+                        <div class="quick-stats">
+                            <div class="stat">
+                                <span class="stat-number" id="total-symptoms">0</span>
+                                <span class="stat-label">Symptoms Logged</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-number" id="this-week">0</span>
+                                <span class="stat-label">This Week</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enhanced History Tab -->
+        <div id="history" class="tab-content">
+            <div class="section-header">
+                <h2>Symptom History & Patterns</h2>
+                <p>Review your symptom timeline and identify patterns</p>
+            </div>
+            
+            <div class="history-controls">
+                <div class="filter-group">
+                    <select id="filter-region" class="form-input">
+                        <option value="">All body regions</option>
+                        <option value="head">Head</option>
+                        <option value="neck">Neck</option>
+                        <option value="chest">Chest</option>
+                        <option value="abdomen">Abdomen</option>
+                        <option value="left-arm">Left Arm</option>
+                        <option value="right-arm">Right Arm</option>
+                        <option value="left-leg">Left Leg</option>
+                        <option value="right-leg">Right Leg</option>
+                    </select>
+                    <input type="date" id="filter-date" class="form-input" onchange="filterHistory()">
+                    <button class="btn-secondary" onclick="filterHistory()">Filter</button>
+                </div>
+            </div>
+            
+            <div class="history-grid">
+                <div class="timeline-card">
+                    <h3>Recent Symptoms</h3>
+                    <div id="symptom-timeline" class="timeline">
+                        <!-- Timeline items will be populated here -->
+                    </div>
+                </div>
+                
+                <div class="patterns-card">
+                    <h3>Pattern Insights</h3>
+                    <div id="pattern-insights" class="insights">
+                        <p class="no-data">Log more symptoms to see patterns</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Appointment Prep Tab -->
+        <div id="appointment" class="tab-content">
+            <div class="section-header">
+                <h2>Prepare for Your Doctor Visit</h2>
+                <p>Organize your symptoms and questions for a productive appointment</p>
+            </div>
+            
+            <div class="appointment-grid">
+                <div class="prep-card glass-card">
+                    <div class="card-icon">📅</div>
+                    <h3>Upcoming Appointment</h3>
+                    <div class="form-group">
+                        <label class="form-label">Doctor/Clinic</label>
+                        <input type="text" id="doctor-name" class="form-input" placeholder="Dr. Smith, Internal Medicine">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Appointment Date</label>
+                        <input type="datetime-local" id="appointment-date" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Main Concern</label>
+                        <textarea id="visit-reason" class="form-textarea" placeholder="What's the primary reason for this visit?"></textarea>
+                    </div>
+                    <button class="btn-primary" onclick="saveAppointment()">
+                        <span class="btn-icon">💾</span>
+                        Save Appointment
+                    </button>
+                </div>
+
+                <div class="prep-card glass-card">
+                    <div class="card-icon">❓</div>
+                    <h3>Questions for Doctor</h3>
+                    <div id="suggested-questions" class="questions-list">
+                        <div class="suggested-question">
+                            <span class="question-icon">💡</span>
+                            <span>What could be causing these symptoms?</span>
+                        </div>
+                        <div class="suggested-question">
+                            <span class="question-icon">💡</span>
+                            <span>Are there any tests I should consider?</span>
+                        </div>
+                        <div class="suggested-question">
+                            <span class="question-icon">💡</span>
+                            <span>What lifestyle changes might help?</span>
+                        </div>
+                    </div>
+                    <div class="add-question">
+                        <input type="text" id="custom-question" class="form-input" placeholder="Add your own question">
+                        <button class="btn-secondary" onclick="addQuestion()">Add</button>
+                    </div>
+                </div>
+
+                <div class="prep-card glass-card full-width">
+                    <div class="card-icon">📋</div>
+                    <h3>Visit Summary</h3>
+                    <div id="visit-summary" class="visit-summary">
+                        <p>Set up an appointment above to see your personalized visit summary</p>
+                    </div>
+                    <button class="btn-primary" onclick="generateVisitSummary()">
+                        <span class="btn-icon">✨</span>
+                        Generate Visit Summary
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reports Tab -->
+        <div id="reports" class="tab-content">
+            <div class="section-header">
+                <h2>Medical Reports</h2>
+                <p>Generate professional reports to share with your healthcare team</p>
+            </div>
+            
+            <div class="reports-grid">
+                <div class="report-card glass-card">
+                    <div class="card-icon">📊</div>
+                    <h3>Report Settings</h3>
+                    <div class="form-group">
+                        <label class="form-label">Time Period</label>
+                        <select id="report-timeframe" class="form-input">
+                            <option value="1week">Last week</option>
+                            <option value="2weeks">Last 2 weeks</option>
+                            <option value="1month">Last month</option>
+                            <option value="3months">Last 3 months</option>
+                            <option value="6months">Last 6 months</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Include in Report</label>
+                        <div class="checkbox-grid">
+                            <label class="checkbox-item">
+                                <input type="checkbox" checked>
+                                <span class="checkmark"></span>
+                                Symptom timeline
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" checked>
+                                <span class="checkmark"></span>
+                                Severity trends
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox">
+                                <span class="checkmark"></span>
+                                Potential patterns
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" checked>
+                                <span class="checkmark"></span>
+                                Summary statistics
+                            </label>
+                        </div>
+                    </div>
+                    <button class="btn-primary" onclick="generateReport()">
+                        <span class="btn-icon">📄</span>
+                        Generate PDF Report
+                    </button>
+                </div>
+
+                <div class="report-preview-card glass-card">
+                    <h3>Report Preview</h3>
+                    <div id="report-preview" class="report-preview">
+                        <div class="preview-placeholder">
+                            <div class="preview-icon">📋</div>
+                            <p>Generate a report to see preview</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Action Button -->
+    <div class="fab" onclick="quickLogSymptom()">
+        <span class="fab-icon">+</span>
+        <span class="fab-tooltip">Quick Log</span>
+    </div>
+
+    <!-- Success Toast -->
+    <div id="toast" class="toast">
+        <span class="toast-icon">✅</span>
+        <span class="toast-message">Symptom logged successfully!</span>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <p>Processing...</p>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
