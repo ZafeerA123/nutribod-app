@@ -1,18 +1,17 @@
-// Symptom Tracker Application
+// Symptom Tracker Application with Firebase Authentication
 class SymptomTracker {
     constructor() {
-        this.symptoms = JSON.parse(localStorage.getItem('symptoms') || '[]');
-        this.appointments = JSON.parse(localStorage.getItem('appointments') || '[]');
+        this.symptoms = [];
+        this.appointments = [];
         this.selectedRegion = null;
         this.currentTab = 'tracker';
+        this.currentUser = null;
         this.init();
     }
 
     init() {
         this.setupEventListeners();
-        this.updateStats();
         this.updateSeverityDisplay();
-        this.renderHistory();
         console.log('MedPrep Tracker initialized successfully!');
     }
 
@@ -39,6 +38,57 @@ class SymptomTracker {
             const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
                 .toISOString().slice(0, 16);
             timeInput.value = localDateTime;
+        }
+    }
+
+    // Load user data from Firestore
+    async loadUserData() {
+        if (!this.currentUser || !window.db) return;
+
+        try {
+            const { collection, query, where, orderBy, getDocs } = window.firebaseOperations;
+            
+            // Load symptoms
+            const symptomsRef = collection(window.db, 'symptoms');
+            const symptomsQuery = query(
+                symptomsRef,
+                where('userId', '==', this.currentUser.uid),
+                orderBy('datetime', 'desc')
+            );
+            const symptomsSnapshot = await getDocs(symptomsQuery);
+            
+            this.symptoms = [];
+            symptomsSnapshot.forEach((doc) => {
+                this.symptoms.push({
+                    id: doc.id,
+                    ...doc.data()
+                });
+            });
+
+            // Load appointments
+            const appointmentsRef = collection(window.db, 'appointments');
+            const appointmentsQuery = query(
+                appointmentsRef,
+                where('userId', '==', this.currentUser.uid),
+                orderBy('created', 'desc')
+            );
+            const appointmentsSnapshot = await getDocs(appointmentsQuery);
+            
+            this.appointments = [];
+            appointmentsSnapshot.forEach((doc) => {
+                this.appointments.push({
+                    id: doc.id,
+                    ...doc.data()
+                });
+            });
+
+            this.updateStats();
+            this.renderHistory();
+            console.log(`Loaded ${this.symptoms.length} symptoms and ${this.appointments.length} appointments for user`);
+
+        } catch (error) {
+            console.error('Error loading user data:', error);
+            this.showToast('Error loading your data', 'error');
         }
     }
 
@@ -114,7 +164,12 @@ class SymptomTracker {
         slider.style.background = `linear-gradient(to right, ${color} 0%, ${color} ${severityValue * 10}%, rgba(255,255,255,0.1) ${severityValue * 10}%, rgba(255,255,255,0.1) 100%)`;
     }
 
-    saveSymptom() {
+    async saveSymptom() {
+        if (!this.currentUser) {
+            this.showToast('Please sign in to save symptoms', 'error');
+            return;
+        }
+
         const type = document.getElementById('symptom-type')?.value;
         const description = document.getElementById('symptom-description')?.value;
         const severity = document.getElementById('severity')?.value;
@@ -127,7 +182,7 @@ class SymptomTracker {
         }
 
         const symptom = {
-            id: Date.now().toString(),
+            userId: this.currentUser.uid,
             region: this.selectedRegion,
             type: type,
             description: description,
@@ -137,12 +192,25 @@ class SymptomTracker {
             created: new Date().toISOString()
         };
 
-        this.symptoms.push(symptom);
-        this.saveToStorage();
-        this.showToast('Symptom logged successfully!');
-        this.clearForm();
-        this.updateStats();
-        this.renderHistory();
+        try {
+            const { collection, addDoc } = window.firebaseOperations;
+            const docRef = await addDoc(collection(window.db, 'symptoms'), symptom);
+            
+            // Add to local array with the new ID
+            this.symptoms.unshift({
+                id: docRef.id,
+                ...symptom
+            });
+
+            this.showToast('Symptom logged successfully!');
+            this.clearForm();
+            this.updateStats();
+            this.renderHistory();
+
+        } catch (error) {
+            console.error('Error saving symptom:', error);
+            this.showToast('Failed to save symptom', 'error');
+        }
     }
 
     clearForm() {
@@ -271,11 +339,6 @@ class SymptomTracker {
         return colors[severity] || '#eab308';
     }
 
-    saveToStorage() {
-        localStorage.setItem('symptoms', JSON.stringify(this.symptoms));
-        localStorage.setItem('appointments', JSON.stringify(this.appointments));
-    }
-
     showToast(message, type = 'success') {
         const toast = document.getElementById('toast');
         const toastMessage = document.querySelector('.toast-message');
@@ -303,7 +366,12 @@ class SymptomTracker {
         }, 3000);
     }
 
-    saveAppointment() {
+    async saveAppointment() {
+        if (!this.currentUser) {
+            this.showToast('Please sign in to save appointments', 'error');
+            return;
+        }
+
         const doctorName = document.getElementById('doctor-name')?.value;
         const appointmentDate = document.getElementById('appointment-date')?.value;
         const visitReason = document.getElementById('visit-reason')?.value;
@@ -314,17 +382,29 @@ class SymptomTracker {
         }
 
         const appointment = {
-            id: Date.now().toString(),
+            userId: this.currentUser.uid,
             doctor: doctorName,
             datetime: appointmentDate,
             reason: visitReason,
             created: new Date().toISOString()
         };
 
-        this.appointments.push(appointment);
-        this.saveToStorage();
-        this.showToast('Appointment saved successfully!');
-        this.generateVisitSummary();
+        try {
+            const { collection, addDoc } = window.firebaseOperations;
+            const docRef = await addDoc(collection(window.db, 'appointments'), appointment);
+            
+            this.appointments.unshift({
+                id: docRef.id,
+                ...appointment
+            });
+
+            this.showToast('Appointment saved successfully!');
+            this.generateVisitSummary();
+
+        } catch (error) {
+            console.error('Error saving appointment:', error);
+            this.showToast('Failed to save appointment', 'error');
+        }
     }
 
     generateVisitSummary() {
@@ -454,6 +534,7 @@ class SymptomTracker {
             return;
         }
 
+        // Same rendering logic as renderHistory but with filtered data
         timeline.innerHTML = sortedSymptoms.map(symptom => `
             <div class="timeline-item" style="
                 background: rgba(255,255,255,0.05);
@@ -671,5 +752,5 @@ function downloadReportPDF() {
 // Initialize the application when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
     window.symptomTracker = new SymptomTracker();
-    console.log('MedPrep Tracker loaded successfully!');
+    console.log('MedPrep Tracker with Authentication loaded successfully!');
 });
