@@ -7,7 +7,7 @@ class SymptomTracker {
         this.selectedRegion = null;
         this.currentTab = 'tracker';
         this.currentUser = null;
-        this.PHOTO_LIMIT = 20;
+        this.PHOTO_LIMIT = 17;
         this.WARNING_THRESHOLD = 15;
         this.init();
     }
