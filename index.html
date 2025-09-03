@@ -5,6 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MedPrep Tracker - Enhanced Health Monitoring</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script src="https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script>
+    // Debug jsPDF loading
+    window.addEventListener('load', function() {
+        console.log('Checking jsPDF...');
+        console.log('window.jsPDF:', typeof window.jsPDF);
+        console.log('window.jspdf:', typeof window.jspdf);
+        
+        // Try different ways jsPDF might be available
+        if (typeof window.jsPDF !== 'undefined') {
+            console.log('jsPDF found at window.jsPDF');
+        } else if (typeof window.jspdf !== 'undefined') {
+            console.log('jsPDF found at window.jspdf');
+            window.jsPDF = window.jspdf; // Create alias
+        } else if (typeof jsPDF !== 'undefined') {
+            console.log('jsPDF found as global jsPDF');
+            window.jsPDF = jsPDF;
+        } else {
+            console.error('jsPDF not found anywhere!');
+        }
+    });
+    </script>
+    <script src="script.js"></script>
 </head>
 <body>
     <!-- Animated Background -->
@@ -26,10 +50,22 @@
         <div class="container">
             <div class="logo-section">
                 <div class="logo-icon">
-                    <svg viewBox="0 0 50 50" class="heartbeat-icon">
-                        <path d="M25 45 C25 45 5 25 5 15 C5 5 15 5 25 15 C35 5 45 5 45 15 C45 25 25 45 25 45 Z" fill="currentColor"/>
-                        <line x1="10" y1="25" x2="40" y2="25" stroke="currentColor" stroke-width="2" class="heartbeat-line"/>
-                        <polyline points="15,25 20,15 25,35 30,10 35,25" stroke="currentColor" stroke-width="2" fill="none" class="heartbeat-pulse"/>
+                    <svg viewBox="0 0 50 50" class="medical-icon">
+                        <!-- Stethoscope icon -->
+                        <path d="M15 8 C12 8 10 10 10 13 C10 16 12 18 15 18 C18 18 20 16 20 13 C20 10 18 8 15 8 Z" 
+                            fill="currentColor" opacity="0.8"/>
+                        <path d="M35 8 C32 8 30 10 30 13 C30 16 32 18 35 18 C38 18 40 16 40 13 C40 10 38 8 35 8 Z" 
+                            fill="currentColor" opacity="0.8"/>
+                        <path d="M15 18 L15 25 C15 30 18 33 22 35 L25 36 L28 35 C32 33 35 30 35 25 L35 18" 
+                            stroke="currentColor" stroke-width="2.5" fill="none"/>
+                        <circle cx="25" cy="40" r="4" fill="currentColor"/>
+                        <path d="M25 36 L25 32" stroke="currentColor" stroke-width="2"/>
+                        
+                        <!-- Small medical cross -->
+                        <g transform="translate(40, 35)">
+                            <rect x="-1" y="-3" width="2" height="6" fill="currentColor"/>
+                            <rect x="-3" y="-1" width="6" height="2" fill="currentColor"/>
+                        </g>
                     </svg>
                 </div>
                 <div class="logo-text">
@@ -40,6 +76,10 @@
             <div class="disclaimer">
                 <div class="disclaimer-icon">⚕️</div>
                 <span><strong>Medical Tool Only:</strong> This tracks symptoms for your records. Always consult healthcare professionals for medical advice.</span>
+            </div>
+            <div class="disclaimer" style="margin-top: 15px;">
+                <div class="disclaimer-icon">📷</div>
+                <span><strong>Photo Storage Limit:</strong> You can upload a maximum of <strong>10 photos total</strong>. No image can exceed 1Mb or 1000Kb. Photo uploads will be completely disabled at this limit. Delete old photos in your History tab to upload new ones.</span>
             </div>
         </div>
     </header>
@@ -413,6 +453,29 @@
                                 <label class="form-label">Additional notes</label>
                                 <textarea id="symptom-notes" class="form-textarea" placeholder="Any triggers, patterns, or other details..."></textarea>
                             </div>
+
+                            <!-- Replace the existing photo upload section in your HTML -->
+                            <div class="form-group photo-upload-section">
+                                <label class="form-label">Upload Photo (optional)</label>
+                                <div class="photo-upload-container">
+                                    <input type="file" accept="image/*" capture="camera" id="symptom-photo" class="photo-input" onchange="handlePhotoSelect(this)">
+                                    <label for="symptom-photo" class="photo-upload-btn">
+                                        <span class="btn-icon">📷</span>
+                                        Choose Photo
+                                    </label>
+                                    <div class="photo-size-warning" id="photo-size-warning">
+                                        ⚠️ Please choose images under 1MB for best performance
+                                    </div>
+                                    <div class="photo-preview" id="photo-preview" style="display: none;">
+                                        <img id="preview-image" class="preview-image">
+                                        <div class="photo-meta" id="photo-meta"></div>
+                                        <button type="button" onclick="removePhoto()" class="remove-photo-btn">
+                                            <span class="btn-icon">×</span>
+                                            Remove
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                             
                             <div class="form-actions">
                                 <button class="btn-primary" onclick="saveSymptom()">
@@ -626,67 +689,30 @@
         <!-- Reports Tab -->
         <div id="reports" class="tab-content">
             <div class="section-header">
-                <h2>Medical Reports & Data Export</h2>
-                <p>Generate professional reports and export your health data</p>
+                <h2>Medical Reports</h2>
+                <p>Generate a comprehensive report for your healthcare provider</p>
             </div>
             
-            <div class="reports-grid">
-                <div class="report-card glass-card">
-                    <div class="card-icon">📊</div>
+            <div class="report-container" style="max-width: 800px; margin: 0 auto;">
+                <div class="report-settings glass-card" style="margin-bottom: 30px;">
+                    <div class="card-icon">⚙️</div>
                     <h3>Report Settings</h3>
+                    
                     <div class="form-group">
-                        <label class="form-label">Time Period</label>
+                        <label class="form-label">Time Period to Include</label>
                         <select id="report-timeframe" class="form-input">
-                            <option value="1week">Last week</option>
                             <option value="2weeks">Last 2 weeks</option>
                             <option value="1month">Last month</option>
                             <option value="3months">Last 3 months</option>
                             <option value="6months">Last 6 months</option>
+                            <option value="all">All data</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Include in Report</label>
-                        <div class="checkbox-grid">
-                            <label class="checkbox-item">
-                                <input type="checkbox" checked>
-                                <span class="checkmark"></span>
-                                Symptom timeline
-                            </label>
-                            <label class="checkbox-item">
-                                <input type="checkbox" checked>
-                                <span class="checkmark"></span>
-                                Life impact analysis
-                            </label>
-                            <label class="checkbox-item">
-                                <input type="checkbox" checked>
-                                <span class="checkmark"></span>
-                                Sleep correlations
-                            </label>
-                            <label class="checkbox-item">
-                                <input type="checkbox" checked>
-                                <span class="checkmark"></span>
-                                Pattern insights
-                            </label>
-                        </div>
-                    </div>
-                    <button class="btn-primary" onclick="generateReport()">
-                        <span class="btn-icon">📄</span>
-                        Generate PDF Report
-                    </button>
                     
-                    <div class="export-section" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
-                        <h4 style="color: #c4b5fd; margin-bottom: 15px;">Export Data</h4>
-                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                            <button class="btn-secondary" onclick="exportLifeImpactData()">
-                                <span class="btn-icon">📥</span>
-                                Export Impact Data
-                            </button>
-                            <button class="btn-secondary" onclick="exportSleepData()">
-                                <span class="btn-icon">😴</span>
-                                Export Sleep Data
-                            </button>
-                        </div>
-                    </div>
+                    <button class="btn-primary" onclick="generateReport()" style="width: 100%; margin-top: 15px;">
+                        <span class="btn-icon">📋</span>
+                        Generate Medical Report
+                    </button>
                 </div>
 
                 <div class="report-preview-card glass-card">
@@ -694,13 +720,15 @@
                     <div id="report-preview" class="report-preview">
                         <div class="preview-placeholder">
                             <div class="preview-icon">📋</div>
-                            <p>Generate a report to see preview with life impact analysis</p>
+                            <p>Generate a report to see your comprehensive health summary</p>
+                            <p style="font-size: 0.9rem; color: rgba(255,255,255,0.6); margin-top: 10px;">
+                                Your report will include: symptom timeline, life impact analysis, sleep patterns, and key insights for your doctor
+                            </p>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
     <!-- Floating Action Button -->
     <div class="fab" onclick="quickLogSymptom()">
@@ -727,6 +755,7 @@
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy, onSnapshot, where } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
         import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInAnonymously, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getStorage } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
 
         const firebaseConfig = {
           apiKey: "AIzaSyCTT85CYY2DA0E2Jvc7Wv7DI0Iu0WKGz9g",
@@ -800,6 +829,48 @@
             document.getElementById('auth-container').style.display = 'flex';
             document.querySelector('.container').style.display = 'none';
             document.getElementById('user-profile').style.display = 'none';
+        }
+
+        // Global photo handling functions 
+        function handlePhotoSelect(input) {
+            const file = input.files[0];
+            const warningElement = document.getElementById('photo-size-warning');
+            const metaElement = document.getElementById('photo-meta');
+            
+            if (file) {
+                // Show file size warning if needed
+                if (file.size > 1024 * 1024) {
+                    warningElement.style.display = 'block';
+                    warningElement.style.color = '#ef4444';
+                    warningElement.innerHTML = '⚠️ File too large! Please choose an image under 1MB';
+                    return;
+                } else {
+                    warningElement.style.display = 'none';
+                }
+                
+                // Show file info
+                const fileSizeKB = Math.round(file.size / 1024);
+                metaElement.textContent = `${file.name} (${fileSizeKB}KB)`;
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('photo-preview');
+                    const image = document.getElementById('preview-image');
+                    image.src = e.target.result;
+                    preview.style.display = 'flex';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function removePhoto() {
+            const input = document.getElementById('symptom-photo');
+            const preview = document.getElementById('photo-preview');
+            const warningElement = document.getElementById('photo-size-warning');
+            
+            input.value = '';
+            preview.style.display = 'none';
+            warningElement.style.display = 'none';
         }
 
         window.signInWithGoogle = async function() {

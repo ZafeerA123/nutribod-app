@@ -1175,16 +1175,19 @@ body {
 }
 
 .user-profile {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    display: flex;
-    align-items: center;
-    gap: 15px;
+    position: fixed !important;
+    top: 20px !important;
+    right: 20px !important;
+    z-index: 99999 !important; /* This should be higher than other elements */
     background: var(--glass-bg);
     padding: 10px 15px;
     border-radius: 12px;
     backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--shadow-glass);
+    display: flex;
+    align-items: center;
+    gap: 15px;
 }
 
 .user-avatar {
@@ -1351,4 +1354,188 @@ body {
 
 .impact-category:nth-child(5) .radio-option input[type="radio"]:checked + .radio-custom {
     background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+/* Enhanced photo display styles for timeline */
+.timeline-item img {
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.timeline-item img:hover {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Photo size warning */
+.photo-size-warning {
+    color: rgba(255, 193, 7, 0.8);
+    font-size: 0.8rem;
+    margin-top: 5px;
+    display: none;
+}
+
+/* Loading state for photo processing */
+.photo-processing {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Photo preview enhancements */
+.preview-image {
+    max-width: 200px;
+    max-height: 200px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    border: 2px solid rgba(79, 172, 254, 0.3);
+    transition: all 0.3s ease;
+}
+
+.preview-image:hover {
+    border-color: rgba(79, 172, 254, 0.6);
+    transform: scale(1.02);
+}
+
+/* Photo meta info */
+.photo-meta {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.5);
+    margin-top: 5px;
+    text-align: center;
+}
+
+/* Responsive photo display */
+@media (max-width: 768px) {
+    .timeline-item img {
+        max-width: 100% !important;
+        height: auto !important;
+    }
+    
+    .preview-image {
+        max-width: 150px;
+        max-height: 150px;
+    }
+}
+
+/* Enhanced photo display styles for timeline */
+.timeline-item img {
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.timeline-item img:hover {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Photo size warning */
+.photo-size-warning {
+    color: rgba(255, 193, 7, 0.8);
+    font-size: 0.8rem;
+    margin-top: 5px;
+    display: none;
+}
+
+/* Loading state for photo processing */
+.photo-processing {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Photo preview enhancements */
+.preview-image {
+    max-width: 200px;
+    max-height: 200px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    border: 2px solid rgba(79, 172, 254, 0.3);
+    transition: all 0.3s ease;
+}
+
+.preview-image:hover {
+    border-color: rgba(79, 172, 254, 0.6);
+    transform: scale(1.02);
+}
+
+/* Photo meta info */
+.photo-meta {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.5);
+    margin-top: 5px;
+    text-align: center;
+}
+
+/* Responsive photo display */
+@media (max-width: 768px) {
+    .timeline-item img {
+        max-width: 100% !important;
+        height: auto !important;
+    }
+    
+    .preview-image {
+        max-width: 150px;
+        max-height: 150px;
+    }
+}
+/* Photo Upload Styles */
+.photo-upload-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.photo-input {
+    display: none;
+}
+
+.photo-upload-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    padding: 12px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: var(--transition);
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.photo-upload-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: var(--text-primary);
+}
+
+.photo-preview {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 15px;
+    text-align: center;
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.remove-photo-btn {
+    background: rgba(239, 68, 68, 0.8);
+    border: none;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: var(--transition);
+}
+
+.remove-photo-btn:hover {
+    background: rgba(239, 68, 68, 1);
+}
+
+.medical-icon {
+    width: 30px;
+    height: 30px;
+    color: white;
 }

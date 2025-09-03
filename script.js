@@ -7,6 +7,8 @@ class SymptomTracker {
         this.selectedRegion = null;
         this.currentTab = 'tracker';
         this.currentUser = null;
+        this.PHOTO_LIMIT = 20;
+        this.WARNING_THRESHOLD = 15;
         this.init();
     }
 
@@ -14,6 +16,7 @@ class SymptomTracker {
         this.setupEventListeners();
         this.updateSeverityDisplay();
         this.updateFilterOptions();
+        this.createPhotoWarningDiv();
         console.log('Enhanced MedPrep Tracker initialized successfully!');
     }
 
@@ -181,7 +184,7 @@ class SymptomTracker {
         });
     }
 
-    // NEW: Get Life Impact Data from form
+    // Get Life Impact Data from form
     getLifeImpactData() {
         const impactData = {};
         
@@ -272,6 +275,9 @@ class SymptomTracker {
             this.generatePatternInsights();
             console.log(`Loaded ${this.symptoms.length} symptoms, ${this.appointments.length} appointments, and ${this.sleepEntries.length} sleep entries for user`);
 
+            // Check photo limit after loading data
+            this.updatePhotoLimitStatus();
+
         } catch (error) {
             console.error('Error loading user data:', error);
             this.showToast('Error loading your data', 'error');
@@ -344,7 +350,7 @@ class SymptomTracker {
         slider.style.background = `linear-gradient(to right, ${color} 0%, ${color} ${severityValue * 10}%, rgba(255,255,255,0.1) ${severityValue * 10}%, rgba(255,255,255,0.1) 100%)`;
     }
 
-    // NEW: Update sleep quality display
+    // Update sleep quality display
     updateSleepQualityDisplay(value = null) {
         const slider = document.getElementById('sleep-quality');
         const display = document.getElementById('sleep-quality-display');
@@ -375,71 +381,142 @@ class SymptomTracker {
         slider.style.background = `linear-gradient(to right, ${color} 0%, ${color} ${qualityValue * 20}%, rgba(255,255,255,0.1) ${qualityValue * 20}%, rgba(255,255,255,0.1) 100%)`;
     }
 
-    async saveSymptom() {
-        if (!this.currentUser) {
-            this.showToast('Please sign in to save symptoms', 'error');
-            return;
-        }
-
-        if (!this.validateForm()) {
-            return;
-        }
-
-        const type = document.getElementById('symptom-type')?.value;
-        const description = document.getElementById('symptom-description')?.value;
-        const severity = document.getElementById('severity')?.value;
-        const time = document.getElementById('symptom-time')?.value;
-        const notes = document.getElementById('symptom-notes')?.value;
-
-        // Get life impact data
-        const impactData = this.getLifeImpactData();
-
-        const symptom = {
-            userId: this.currentUser.uid,
-            region: this.selectedRegion,
-            type: type,
-            description: description,
-            severity: parseInt(severity),
-            datetime: time,
-            notes: notes,
-            lifeImpact: impactData,
-            created: new Date().toISOString()
-        };
-
-        try {
-            const saveButton = document.querySelector('.btn-primary');
-            const originalContent = saveButton.innerHTML;
-            saveButton.disabled = true;
-            saveButton.innerHTML = '<div class="loading-spinner" style="width: 16px; height: 16px; margin: 0;"></div> Saving...';
-
-            const { collection, addDoc } = window.firebaseOperations;
-            const docRef = await addDoc(collection(window.db, 'symptoms'), symptom);
-            
-            this.symptoms.unshift({
-                id: docRef.id,
-                ...symptom
-            });
-
-            this.showToast('Symptom logged successfully!');
-            this.clearForm();
-            this.updateStats();
-            this.renderHistory();
-            this.generatePatternInsights();
-
-            saveButton.disabled = false;
-            saveButton.innerHTML = originalContent;
-
-        } catch (error) {
-            console.error('Error saving symptom:', error);
-            this.showToast('Failed to save symptom. Please try again.', 'error');
-            
-            const saveButton = document.querySelector('.btn-primary');
-            saveButton.disabled = false;
-            saveButton.innerHTML = '<span class="btn-icon">💾</span>Log Symptom';
+    // FIXED: Photo limit checking with proper UI updates
+    createPhotoWarningDiv() {
+        if (document.getElementById('photo-limit-warning')) return;
+        
+        const warningDiv = document.createElement('div');
+        warningDiv.id = 'photo-limit-warning';
+        warningDiv.style.cssText = `
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 8px;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 0.9rem;
+            display: none;
+            text-align: center;
+        `;
+        
+        const photoSection = document.querySelector('.photo-upload-section');
+        if (photoSection) {
+            photoSection.insertBefore(warningDiv, photoSection.firstChild);
         }
     }
 
-    // NEW: Save sleep entry
+    updatePhotoLimitStatus() {
+        const symptomsWithPhotos = this.symptoms.filter(s => s.photoBase64);
+        const used = symptomsWithPhotos.length;
+        
+        if (used >= this.PHOTO_LIMIT) {
+            this.disablePhotoUpload(used);
+        } else if (used >= this.WARNING_THRESHOLD) {
+            this.showPhotoWarning(used);
+        } else {
+            this.hidePhotoWarning();
+            this.enablePhotoUpload();
+        }
+    }
+
+    showPhotoWarning(used) {
+        const warningDiv = document.getElementById('photo-limit-warning');
+        if (warningDiv) {
+            warningDiv.innerHTML = `
+                <span style="color: #f59e0b;">⚠️ Photo storage: ${used}/${this.PHOTO_LIMIT} used. ${this.PHOTO_LIMIT - used} remaining.</span>
+            `;
+            warningDiv.style.display = 'block';
+        }
+    }
+
+    hidePhotoWarning() {
+        const warningDiv = document.getElementById('photo-limit-warning');
+        if (warningDiv) {
+            warningDiv.style.display = 'none';
+        }
+    }
+
+    disablePhotoUpload(used) {
+        const photoInput = document.getElementById('symptom-photo');
+        const photoLabel = document.querySelector('label[for="symptom-photo"]');
+        const warningDiv = document.getElementById('photo-limit-warning');
+        
+        if (photoInput) {
+            photoInput.disabled = true;
+            photoInput.style.display = 'none';
+        }
+        
+        if (photoLabel) {
+            photoLabel.innerHTML = `
+                <span style="color: #ef4444; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <span>📵</span>
+                    Photo limit reached (${used}/${this.PHOTO_LIMIT})
+                </span>
+            `;
+            photoLabel.style.background = 'rgba(239, 68, 68, 0.1)';
+            photoLabel.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+            photoLabel.style.cursor = 'not-allowed';
+            photoLabel.onclick = (e) => {
+                e.preventDefault();
+                this.showToast('Photo limit reached. Delete photos in History tab to upload new ones.', 'error');
+            };
+        }
+
+        if (warningDiv) {
+            warningDiv.innerHTML = `
+                <span style="color: #ef4444;">🚫 Maximum photo storage reached (${this.PHOTO_LIMIT}/${this.PHOTO_LIMIT}). Delete old photos in History tab to upload new ones.</span>
+            `;
+            warningDiv.style.display = 'block';
+            warningDiv.style.background = 'rgba(239, 68, 68, 0.1)';
+            warningDiv.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+        }
+    }
+
+    enablePhotoUpload() {
+        const photoInput = document.getElementById('symptom-photo');
+        const photoLabel = document.querySelector('label[for="symptom-photo"]');
+        
+        if (photoInput) {
+            photoInput.disabled = false;
+            photoInput.style.display = 'block';
+        }
+        
+        if (photoLabel && (photoLabel.innerHTML.includes('Photo limit reached') || photoLabel.innerHTML.includes('📵'))) {
+            photoLabel.innerHTML = `
+                <span class="btn-icon">📷</span>
+                Choose Photo
+            `;
+            photoLabel.style.background = 'rgba(255, 255, 255, 0.1)';
+            photoLabel.style.border = '1px solid rgba(255, 255, 255, 0.2)';
+            photoLabel.style.cursor = 'pointer';
+            photoLabel.onclick = null;
+        }
+    }
+
+    // FIXED: Photo validation that checks limits before processing
+    validatePhotoUpload(file) {
+        if (!file) return { valid: false, message: 'No file selected' };
+        
+        // Check file size
+        if (file.size > 1024 * 1024) {
+            return { 
+                valid: false, 
+                message: 'File too large. Please choose an image under 1MB.' 
+            };
+        }
+
+        // Check photo limit
+        const symptomsWithPhotos = this.symptoms.filter(s => s.photoBase64);
+        if (symptomsWithPhotos.length >= this.PHOTO_LIMIT) {
+            return { 
+                valid: false, 
+                message: `Photo limit reached (${this.PHOTO_LIMIT} maximum). Delete old photos to upload new ones.` 
+            };
+        }
+
+        return { valid: true };
+    }
+
+    // Save sleep entry
     async saveSleep() {
         if (!this.currentUser) {
             this.showToast('Please sign in to save sleep data', 'error');
@@ -502,7 +579,7 @@ class SymptomTracker {
         }
     }
 
-    // NEW: Render sleep history
+    // Render sleep history
     renderSleepHistory() {
         const timeline = document.getElementById('sleep-timeline');
         if (!timeline) return;
@@ -559,7 +636,7 @@ class SymptomTracker {
         `).join('');
     }
 
-    // NEW: Get sleep quality color
+    // Get sleep quality color
     getSleepQualityColor(quality) {
         const colors = {
             1: '#dc2626', 2: '#ef4444',
@@ -648,7 +725,7 @@ class SymptomTracker {
         return patterns.slice(0, 4);
     }
 
-    // NEW: Analyze life impact patterns
+    // Analyze life impact patterns
     analyzeLifeImpactPatterns() {
         const patterns = [];
         const impactCounts = {
@@ -688,7 +765,7 @@ class SymptomTracker {
         return patterns;
     }
 
-    // NEW: Analyze sleep-symptom correlation
+    // Analyze sleep-symptom correlation
     analyzeSleepSymptomCorrelation() {
         if (this.sleepEntries.length < 3 || this.symptoms.length < 3) {
             return null;
@@ -730,7 +807,7 @@ class SymptomTracker {
         return null;
     }
 
-    // NEW: Export sleep data as CSV
+    // Export sleep data as CSV
     exportSleepData() {
         if (this.sleepEntries.length === 0) {
             this.showToast('No sleep data to export', 'error');
@@ -769,7 +846,7 @@ class SymptomTracker {
         this.showToast('Sleep data exported successfully!');
     }
 
-    // NEW: Export life impact data as CSV
+    // Export life impact data as CSV
     exportLifeImpactData() {
         const symptomsWithImpact = this.symptoms.filter(s => s.lifeImpact);
         
@@ -843,6 +920,15 @@ class SymptomTracker {
             timeInput.value = localDateTime;
         }
 
+        // Clear photo
+        const photoInput = document.getElementById('symptom-photo');
+        const photoPreview = document.getElementById('photo-preview');
+        const photoWarning = document.getElementById('photo-size-warning');
+        
+        if (photoInput) photoInput.value = '';
+        if (photoPreview) photoPreview.style.display = 'none';
+        if (photoWarning) photoWarning.style.display = 'none';
+
         const form = document.getElementById('symptom-form');
         const instruction = document.getElementById('instruction-text');
         
@@ -900,15 +986,42 @@ class SymptomTracker {
         if (!timeline) return;
 
         if (this.symptoms.length === 0) {
-            timeline.innerHTML = '<p style="color: rgba(255,255,255,0.6); text-align: center; padding: 40px;">No symptoms logged yet. Start by clicking on the body map!</p>';
+            timeline.innerHTML = `
+                <div style="text-align: center; padding: 40px;">
+                    <p style="color: rgba(255,255,255,0.6);">No symptoms logged yet. Start by clicking on the body map!</p>
+                    <div style="margin-top: 20px;">
+                        <button class="btn-primary" onclick="window.symptomTracker.switchTab('tracker')">
+                            <span class="btn-icon">🎯</span>
+                            Log Your First Symptom
+                        </button>
+                    </div>
+                </div>
+            `;
             return;
+        }
+
+        // Show photo usage stats
+        const photoStats = this.getPhotoUsageStats();
+        let photoWarning = '';
+        if (photoStats.used > 0) {
+            const warningColor = photoStats.percentage > 85 ? '#ef4444' : photoStats.percentage > 70 ? '#f59e0b' : '#4facfe';
+            photoWarning = `
+                <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 3px solid ${warningColor};">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>📷 Photo Storage: ${photoStats.used}/${photoStats.limit} (${photoStats.percentage}%)</span>
+                        <button class="btn-secondary" onclick="window.symptomTracker.deleteAllUserData()" style="font-size: 0.8rem; padding: 6px 12px;">
+                            🗑️ Delete All Data
+                        </button>
+                    </div>
+                </div>
+            `;
         }
 
         const sortedSymptoms = [...this.symptoms].sort((a, b) => 
             new Date(b.datetime) - new Date(a.datetime)
         );
 
-        timeline.innerHTML = sortedSymptoms.map(symptom => {
+        timeline.innerHTML = photoWarning + sortedSymptoms.map(symptom => {
             let impactSummary = '';
             if (symptom.lifeImpact) {
                 const impacts = Object.entries(symptom.lifeImpact)
@@ -921,6 +1034,25 @@ class SymptomTracker {
                 }
             }
 
+            // Add photo display if exists
+            let photoDisplay = '';
+            if (symptom.photoBase64) {
+                photoDisplay = `
+                    <div style="margin-top: 10px; position: relative;">
+                        <img src="${symptom.photoBase64}" 
+                            alt="Symptom photo" 
+                            style="max-width: 200px; max-height: 150px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1);"
+                            onclick="this.style.maxWidth = this.style.maxWidth === '200px' ? '100%' : '200px'; this.style.maxHeight = this.style.maxHeight === '150px' ? 'auto' : '150px';"
+                            onmouseover="this.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.3)'; this.style.borderColor = 'rgba(255, 255, 255, 0.2)';"
+                            onmouseout="this.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.2)'; this.style.borderColor = 'rgba(255, 255, 255, 0.1)';"
+                            title="Click to enlarge/shrink">
+                        <div style="margin-top: 5px; font-size: 0.7rem; color: rgba(255,255,255,0.5);">
+                            📷 ${symptom.photoFileName || 'Symptom Photo'}
+                        </div>
+                    </div>
+                `;
+            }
+
             return `
                 <div class="timeline-item" style="
                     background: rgba(255,255,255,0.05);
@@ -929,10 +1061,29 @@ class SymptomTracker {
                     margin-bottom: 15px;
                     border-left: 4px solid ${this.getSeverityColor(symptom.severity)};
                     transition: all 0.3s ease;
-                    cursor: pointer;
-                " onmouseover="this.style.background='rgba(255,255,255,0.1)'" 
-                   onmouseout="this.style.background='rgba(255,255,255,0.05)'">
-                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                    position: relative;
+                ">
+                    <button onclick="window.symptomTracker.deleteSymptom('${symptom.id}')" style="
+                        position: absolute;
+                        top: 10px;
+                        right: 10px;
+                        background: rgba(239, 68, 68, 0.8);
+                        border: none;
+                        color: white;
+                        width: 30px;
+                        height: 30px;
+                        border-radius: 50%;
+                        cursor: pointer;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 0.8rem;
+                        transition: all 0.3s ease;
+                    " onmouseover="this.style.background='rgba(239, 68, 68, 1)'; this.style.transform='scale(1.1)'" 
+                    onmouseout="this.style.background='rgba(239, 68, 68, 0.8)'; this.style.transform='scale(1)'"
+                    title="Delete this symptom">×</button>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px; margin-right: 40px;">
                         <div>
                             <h4 style="color: #c4b5fd; font-size: 1.1rem; margin-bottom: 5px;">
                                 ${symptom.region.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())} - ${symptom.type}
@@ -959,6 +1110,7 @@ class SymptomTracker {
                         </div>
                     </div>
                     ${impactSummary}
+                    ${photoDisplay}
                     ${symptom.notes ? `<p style="color: rgba(255,255,255,0.7); font-style: italic; margin-top: 10px;">Notes: ${symptom.notes}</p>` : ''}
                 </div>
             `;
@@ -974,6 +1126,16 @@ class SymptomTracker {
             9: '#ef4444', 10: '#dc2626'
         };
         return colors[severity] || '#eab308';
+    }
+
+    // Show current photo usage stats
+    getPhotoUsageStats() {
+        const symptomsWithPhotos = this.symptoms.filter(s => s.photoBase64);
+        return {
+            used: symptomsWithPhotos.length,
+            limit: this.PHOTO_LIMIT,
+            percentage: Math.round((symptomsWithPhotos.length / this.PHOTO_LIMIT) * 100)
+        };
     }
 
     showToast(message, type = 'success') {
@@ -1099,7 +1261,7 @@ class SymptomTracker {
         `;
     }
 
-    // NEW: Analyze life impact for visit summary
+    // Analyze life impact for visit summary
     analyzeLifeImpactForSummary(symptoms) {
         const symptomsWithImpact = symptoms.filter(s => s.lifeImpact);
         if (symptomsWithImpact.length === 0) return '';
@@ -1212,6 +1374,7 @@ class SymptomTracker {
         this.renderHistory();
     }
 
+    // Simplified report generation
     generateReport() {
         const timeframe = document.getElementById('report-timeframe')?.value;
         const preview = document.getElementById('report-preview');
@@ -1219,7 +1382,7 @@ class SymptomTracker {
         if (!preview) return;
 
         if (this.symptoms.length === 0) {
-            this.showToast('No symptoms to generate report from', 'error');
+            this.showToast('No symptoms logged yet. Add some symptoms first.', 'error');
             return;
         }
 
@@ -1229,21 +1392,30 @@ class SymptomTracker {
             const reportData = this.getReportData(timeframe);
             this.showReportPreview(reportData);
             this.showLoadingOverlay(false);
-            this.showToast('Report generated successfully!');
+            this.showToast('Medical report generated successfully!');
         }, 1500);
     }
 
     getReportData(timeframe) {
-        const days = {
-            '1week': 7,
-            '2weeks': 14,
-            '1month': 30,
-            '3months': 90,
-            '6months': 180
-        };
-
-        const cutoffDate = new Date();
-        cutoffDate.setDate(cutoffDate.getDate() - days[timeframe]);
+        let cutoffDate = new Date();
+        
+        switch(timeframe) {
+            case '2weeks':
+                cutoffDate.setDate(cutoffDate.getDate() - 14);
+                break;
+            case '1month':
+                cutoffDate.setMonth(cutoffDate.getMonth() - 1);
+                break;
+            case '3months':
+                cutoffDate.setMonth(cutoffDate.getMonth() - 3);
+                break;
+            case '6months':
+                cutoffDate.setMonth(cutoffDate.getMonth() - 6);
+                break;
+            case 'all':
+                cutoffDate = new Date(0); // Include all data
+                break;
+        }
 
         const relevantSymptoms = this.symptoms.filter(symptom => 
             new Date(symptom.datetime) >= cutoffDate
@@ -1252,12 +1424,30 @@ class SymptomTracker {
         const regionStats = {};
         const typeStats = {};
         const severityStats = [];
+        const impactStats = {
+            work: 0, sleep: 0, social: 0, mobility: 0, mood: 0
+        };
 
         relevantSymptoms.forEach(symptom => {
             regionStats[symptom.region] = (regionStats[symptom.region] || 0) + 1;
             typeStats[symptom.type] = (typeStats[symptom.type] || 0) + 1;
             severityStats.push(symptom.severity);
+            
+            // Count life impact
+            if (symptom.lifeImpact) {
+                Object.keys(impactStats).forEach(category => {
+                    if (symptom.lifeImpact[category] && symptom.lifeImpact[category] !== 'none') {
+                        impactStats[category]++;
+                    }
+                });
+            }
         });
+
+        // Sleep correlation
+        let sleepCorrelation = null;
+        if (this.sleepEntries.length >= 3) {
+            sleepCorrelation = this.analyzeSleepSymptomCorrelation();
+        }
 
         return {
             timeframe: timeframe,
@@ -1268,7 +1458,9 @@ class SymptomTracker {
             regionStats: regionStats,
             typeStats: typeStats,
             maxSeverity: Math.max(...severityStats, 0),
-            minSeverity: Math.min(...severityStats, 0)
+            minSeverity: Math.min(...severityStats, 0),
+            impactStats: impactStats,
+            sleepCorrelation: sleepCorrelation
         };
     }
 
@@ -1276,49 +1468,309 @@ class SymptomTracker {
         const preview = document.getElementById('report-preview');
         if (!preview) return;
 
-        const topRegion = Object.keys(data.regionStats).reduce((a, b) => 
-            data.regionStats[a] > data.regionStats[b] ? a : b, 'none'
-        );
-        const topType = Object.keys(data.typeStats).reduce((a, b) => 
-            data.typeStats[a] > data.typeStats[b] ? a : b, 'none'
-        );
+        const timeframeLabels = {
+            '2weeks': 'Last 2 weeks',
+            '1month': 'Last month', 
+            '3months': 'Last 3 months',
+            '6months': 'Last 6 months',
+            'all': 'All time'
+        };
+
+        const topRegion = Object.keys(data.regionStats).length > 0 ? 
+            Object.keys(data.regionStats).reduce((a, b) => 
+                data.regionStats[a] > data.regionStats[b] ? a : b, 'none'
+            ) : 'none';
+        
+        const topType = Object.keys(data.typeStats).length > 0 ?
+            Object.keys(data.typeStats).reduce((a, b) => 
+                data.typeStats[a] > data.typeStats[b] ? a : b, 'none'
+            ) : 'none';
+
+        // Find most impacted life areas
+        const significantImpacts = Object.entries(data.impactStats)
+            .filter(([key, count]) => count >= 2)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 3);
 
         preview.innerHTML = `
-            <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
-                <h4 style="color: #c4b5fd; margin-bottom: 15px;">Medical Report Summary</h4>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 15px;">
-                    <div style="text-align: center;">
-                        <div style="font-size: 1.5rem; font-weight: 700; color: #4facfe;">${data.totalCount}</div>
+            <div style="background: rgba(255,255,255,0.05); padding: 25px; border-radius: 12px; margin-bottom: 20px;">
+                <h4 style="color: #c4b5fd; margin-bottom: 20px; font-size: 1.2rem;">
+                    Medical Report Summary - ${timeframeLabels[data.timeframe]}
+                </h4>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                    <div style="text-align: center; background: rgba(79, 172, 254, 0.1); padding: 15px; border-radius: 8px;">
+                        <div style="font-size: 1.8rem; font-weight: 700; color: #4facfe;">${data.totalCount}</div>
                         <div style="color: rgba(255,255,255,0.7); font-size: 0.9rem;">Total Symptoms</div>
                     </div>
-                    <div style="text-align: center;">
-                        <div style="font-size: 1.5rem; font-weight: 700; color: #f093fb;">${data.avgSeverity}</div>
+                    <div style="text-align: center; background: rgba(245, 87, 108, 0.1); padding: 15px; border-radius: 8px;">
+                        <div style="font-size: 1.8rem; font-weight: 700; color: #f093fb;">${data.avgSeverity}</div>
                         <div style="color: rgba(255,255,255,0.7); font-size: 0.9rem;">Avg Severity</div>
                     </div>
-                    <div style="text-align: center;">
-                        <div style="font-size: 1.5rem; font-weight: 700; color: #ef4444;">${data.maxSeverity}</div>
+                    <div style="text-align: center; background: rgba(239, 68, 68, 0.1); padding: 15px; border-radius: 8px;">
+                        <div style="font-size: 1.8rem; font-weight: 700; color: #ef4444;">${data.maxSeverity}</div>
                         <div style="color: rgba(255,255,255,0.7); font-size: 0.9rem;">Peak Severity</div>
                     </div>
                 </div>
-                <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
-                    <p style="color: rgba(255,255,255,0.8); margin-bottom: 8px;">
-                        <strong>Most affected region:</strong> ${topRegion.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())} (${data.regionStats[topRegion] || 0} times)
-                    </p>
-                    <p style="color: rgba(255,255,255,0.8);">
-                        <strong>Most common type:</strong> ${topType} (${data.typeStats[topType] || 0} times)
-                    </p>
+                
+                <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 8px;">
+                    <h5 style="color: #c4b5fd; margin-bottom: 15px;">Key Points for Healthcare Provider:</h5>
+                    <ul style="color: rgba(255,255,255,0.9); line-height: 1.8; padding-left: 20px;">
+                        ${data.totalCount > 0 ? `
+                            <li><strong>Most affected area:</strong> ${topRegion.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())} (${data.regionStats[topRegion] || 0} occurrences)</li>
+                            <li><strong>Most common symptom:</strong> ${topType} (${data.typeStats[topType] || 0} times)</li>
+                            <li><strong>Pain range:</strong> ${data.minSeverity}/10 to ${data.maxSeverity}/10 (average: ${data.avgSeverity}/10)</li>
+                            ${significantImpacts.length > 0 ? `
+                                <li><strong>Life impact areas:</strong> ${significantImpacts.map(([area, count]) => `${area} (${count} times)`).join(', ')}</li>
+                            ` : ''}
+                            ${data.sleepCorrelation ? `
+                                <li><strong>Sleep correlation:</strong> Potential connection between sleep quality and symptom severity detected</li>
+                            ` : ''}
+                        ` : '<li>No symptoms in selected time period</li>'}
+                    </ul>
                 </div>
             </div>
-            <div style="display: flex; gap: 10px;">
-                <button class="btn-primary" onclick="downloadReportPDF()" style="flex: 1;">
-                    <span class="btn-icon">📥</span>
-                    Download PDF Report
-                </button>
-                <button class="btn-secondary" onclick="window.symptomTracker.exportLifeImpactData()">
-                    Export Impact Data
-                </button>
-            </div>
+            
+            <button class="btn-primary" onclick="window.symptomTracker.downloadMedicalReport()" style="width: 100%;">
+                <span class="btn-icon">📥</span>
+                Download Complete Medical Report (PDF)
+            </button>
         `;
+    }
+
+    async downloadMedicalReport() {
+        if (this.symptoms.length === 0) {
+            this.showToast('No data to export', 'error');
+            return;
+        }
+
+        this.showLoadingOverlay(true);
+
+        try {
+            // Check if jsPDF is available
+            if (typeof window.jsPDF === 'undefined') {
+                console.log('jsPDF not found, falling back to text export');
+                this.downloadTextReport();
+                return;
+            }
+
+            const { jsPDF } = window.jsPDF;
+            const doc = new jsPDF();
+            
+            const timeframe = document.getElementById('report-timeframe')?.value || '1month';
+            const reportData = this.getReportData(timeframe);
+            
+            // Generate PDF with images
+            await this.generatePDFWithImages(doc, reportData);
+            
+            // Save the PDF
+            const fileName = `medical-report-${new Date().toISOString().split('T')[0]}.pdf`;
+            doc.save(fileName);
+            
+            this.showToast('PDF report with images generated successfully!');
+        } catch (error) {
+            console.error('Error generating PDF:', error);
+            this.showToast('PDF generation failed, downloading text version', 'error');
+            this.downloadTextReport();
+        } finally {
+            this.showLoadingOverlay(false);
+        }
+    }
+
+    // New method to generate PDF with images
+    async generatePDFWithImages(doc, data) {
+        let yPosition = 20;
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
+        const margin = 20;
+
+        // Helper function to check if we need a new page
+        const checkNewPage = (spaceNeeded = 30) => {
+            if (yPosition + spaceNeeded > pageHeight - margin) {
+                doc.addPage();
+                yPosition = 20;
+            }
+        };
+
+        // Title
+        doc.setFontSize(18);
+        doc.setFont('helvetica', 'bold');
+        doc.text('MEDICAL SYMPTOM REPORT', pageWidth / 2, yPosition, { align: 'center' });
+        yPosition += 20;
+
+        // Report info
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Generated: ${new Date().toLocaleString()}`, margin, yPosition);
+        yPosition += 8;
+        doc.text(`Time Period: ${this.getTimeframeLabel(data.timeframe)}`, margin, yPosition);
+        yPosition += 8;
+        doc.text(`Patient: ${this.currentUser?.email || 'Demo User'}`, margin, yPosition);
+        yPosition += 20;
+
+        // Summary section
+        checkNewPage(50);
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text('SUMMARY STATISTICS', margin, yPosition);
+        yPosition += 12;
+
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Total Symptoms: ${data.totalCount}`, margin, yPosition);
+        yPosition += 6;
+        doc.text(`Average Severity: ${data.avgSeverity}/10`, margin, yPosition);
+        yPosition += 6;
+        doc.text(`Severity Range: ${data.minSeverity}/10 - ${data.maxSeverity}/10`, margin, yPosition);
+        yPosition += 20;
+
+        // Symptoms with photos
+        const symptomsWithPhotos = data.symptoms.filter(s => s.photoBase64).slice(0, 3);
+        const symptomsWithoutPhotos = data.symptoms.filter(s => !s.photoBase64).slice(0, 5);
+        
+        if (symptomsWithPhotos.length > 0) {
+            checkNewPage(50);
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
+            doc.text('SYMPTOMS WITH PHOTOS', margin, yPosition);
+            yPosition += 15;
+
+            for (const symptom of symptomsWithPhotos) {
+                checkNewPage(80);
+
+                doc.setFontSize(11);
+                doc.setFont('helvetica', 'bold');
+                doc.text(new Date(symptom.datetime).toLocaleDateString(), margin, yPosition);
+                yPosition += 8;
+
+                doc.setFontSize(10);
+                doc.setFont('helvetica', 'normal');
+                doc.text(`Location: ${symptom.region.replace('-', ' ')}`, margin + 5, yPosition);
+                yPosition += 6;
+                doc.text(`Type: ${symptom.type} | Severity: ${symptom.severity}/10`, margin + 5, yPosition);
+                yPosition += 6;
+                
+                const description = `Description: ${symptom.description}`;
+                const splitDescription = doc.splitTextToSize(description, pageWidth - 2 * margin - 60);
+                doc.text(splitDescription, margin + 5, yPosition);
+                yPosition += splitDescription.length * 6;
+
+                if (symptom.photoBase64) {
+                    try {
+                        yPosition += 5;
+                        doc.text('Photo:', margin + 5, yPosition);
+                        yPosition += 8;
+                        
+                        doc.addImage(symptom.photoBase64, 'JPEG', margin + 5, yPosition, 50, 40);
+                        yPosition += 45;
+                    } catch (imageError) {
+                        console.error('Error adding image:', imageError);
+                        doc.text('[Photo could not be processed]', margin + 5, yPosition);
+                        yPosition += 8;
+                    }
+                }
+                
+                yPosition += 10;
+            }
+        }
+
+        // Regular symptoms (without photos)
+        if (symptomsWithoutPhotos.length > 0) {
+            checkNewPage(50);
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
+            doc.text('RECENT SYMPTOMS', margin, yPosition);
+            yPosition += 15;
+
+            symptomsWithoutPhotos.forEach(symptom => {
+                checkNewPage(25);
+
+                doc.setFontSize(10);
+                doc.setFont('helvetica', 'bold');
+                doc.text(`${new Date(symptom.datetime).toLocaleDateString()} - ${symptom.region.replace('-', ' ')}`, margin, yPosition);
+                yPosition += 6;
+
+                doc.setFont('helvetica', 'normal');
+                doc.text(`${symptom.type} (Severity: ${symptom.severity}/10)`, margin + 5, yPosition);
+                yPosition += 6;
+                
+                const description = doc.splitTextToSize(symptom.description, pageWidth - 2 * margin - 10);
+                doc.text(description, margin + 5, yPosition);
+                yPosition += description.length * 6 + 8;
+            });
+        }
+
+        // Disclaimer
+        checkNewPage(30);
+        yPosition += 10;
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'italic');
+        const disclaimer = 'This report is generated from self-reported symptom data and is intended to assist healthcare providers. Not for self-diagnosis.';
+        const disclaimerLines = doc.splitTextToSize(disclaimer, pageWidth - 2 * margin);
+        doc.text(disclaimerLines, margin, yPosition);
+    }
+
+    // Text fallback method
+    downloadTextReport() {
+        const timeframe = document.getElementById('report-timeframe')?.value || '1month';
+        const reportData = this.getReportData(timeframe);
+        
+        let content = `MEDICAL SYMPTOM REPORT
+Generated: ${new Date().toLocaleString()}
+Time Period: ${this.getTimeframeLabel(timeframe)}
+Patient: ${this.currentUser?.email || 'Demo User'}
+
+SUMMARY STATISTICS
+==================
+Total Symptoms: ${reportData.totalCount}
+Average Severity: ${reportData.avgSeverity}/10
+Severity Range: ${reportData.minSeverity}/10 - ${reportData.maxSeverity}/10
+
+DETAILED SYMPTOM LOG
+===================
+`;
+
+        reportData.symptoms
+            .sort((a, b) => new Date(b.datetime) - new Date(a.datetime))
+            .slice(0, 10)
+            .forEach((symptom, index) => {
+                content += `
+${index + 1}. ${new Date(symptom.datetime).toLocaleString()}
+Location: ${symptom.region.replace('-', ' ')}
+Type: ${symptom.type}
+Severity: ${symptom.severity}/10
+Description: ${symptom.description}
+${symptom.notes ? `Notes: ${symptom.notes}` : ''}
+${symptom.photoBase64 ? '[Photo included in PDF version]' : ''}
+`;
+            });
+
+        content += `
+==================
+This report contains ${reportData.totalCount} total symptoms.
+For complete data with photos, use PDF export.
+
+Generated by MedPrep Tracker`;
+
+        const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `medical-report-${new Date().toISOString().split('T')[0]}.txt`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+    }
+
+    // Helper method for timeframe labels
+    getTimeframeLabel(timeframe) {
+        const labels = {
+            '2weeks': 'Last 2 weeks',
+            '1month': 'Last month', 
+            '3months': 'Last 3 months',
+            '6months': 'Last 6 months',
+            'all': 'All time'
+        };
+        return labels[timeframe] || 'Unknown period';
     }
 
     showLoadingOverlay(show) {
@@ -1360,6 +1812,241 @@ class SymptomTracker {
         } else if (tabName === 'sleep') {
             this.renderSleepHistory();
             this.updateSleepQualityDisplay();
+        }
+    }
+
+    // FIXED: Photo upload with proper validation
+    async uploadPhoto(file) {
+        if (!file) return null;
+        
+        // Validate the file before processing
+        const validation = this.validatePhotoUpload(file);
+        if (!validation.valid) {
+            this.showToast(validation.message, 'error');
+            return null;
+        }
+        
+        try {
+            // Convert to base64
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const base64String = e.target.result;
+                    resolve(base64String);
+                };
+                reader.onerror = function(error) {
+                    console.error('Error reading file:', error);
+                    reject(error);
+                };
+                reader.readAsDataURL(file);
+            });
+
+        } catch (error) {
+            console.error('Error processing photo:', error);
+            this.showToast('Failed to process photo', 'error');
+            return null;
+        }
+    }
+
+    // FIXED: Save symptom with proper photo limit checking
+    async saveSymptom() {
+        if (!this.currentUser) {
+            this.showToast('Please sign in to save symptoms', 'error');
+            return;
+        }
+
+        if (!this.validateForm()) {
+            return;
+        }
+
+        const photoFile = document.getElementById('symptom-photo')?.files[0];
+        
+        // Validate photo if one is selected
+        if (photoFile) {
+            const validation = this.validatePhotoUpload(photoFile);
+            if (!validation.valid) {
+                this.showToast(validation.message, 'error');
+                return;
+            }
+        }
+
+        const type = document.getElementById('symptom-type')?.value;
+        const description = document.getElementById('symptom-description')?.value;
+        const severity = document.getElementById('severity')?.value;
+        const time = document.getElementById('symptom-time')?.value;
+        const notes = document.getElementById('symptom-notes')?.value;
+
+        // Get life impact data
+        const impactData = this.getLifeImpactData();
+
+        try {
+            const saveButton = document.querySelector('.btn-primary');
+            const originalContent = saveButton.innerHTML;
+            saveButton.disabled = true;
+            saveButton.innerHTML = '<div class="loading-spinner" style="width: 16px; height: 16px; margin: 0;"></div> Saving...';
+
+            // Convert photo to base64 if exists
+            let photoBase64 = null;
+            if (photoFile) {
+                saveButton.innerHTML = '<div class="loading-spinner" style="width: 16px; height: 16px; margin: 0;"></div> Processing photo...';
+                photoBase64 = await this.uploadPhoto(photoFile);
+                if (photoBase64 === null && photoFile) {
+                    saveButton.disabled = false;
+                    saveButton.innerHTML = originalContent;
+                    return;
+                }
+            }
+
+            const symptom = {
+                userId: this.currentUser.uid,
+                region: this.selectedRegion,
+                type: type,
+                description: description,
+                severity: parseInt(severity),
+                datetime: time,
+                notes: notes,
+                lifeImpact: impactData,
+                photoBase64: photoBase64,
+                photoFileName: photoFile ? photoFile.name : null,
+                created: new Date().toISOString()
+            };
+
+            const { collection, addDoc } = window.firebaseOperations;
+            const docRef = await addDoc(collection(window.db, 'symptoms'), symptom);
+            
+            this.symptoms.unshift({
+                id: docRef.id,
+                ...symptom
+            });
+
+            this.showToast('Symptom logged successfully!');
+            this.clearForm();
+            this.updateStats();
+            this.renderHistory();
+            this.generatePatternInsights();
+            
+            // Update photo limit status after adding new symptom
+            this.updatePhotoLimitStatus();
+
+            saveButton.disabled = false;
+            saveButton.innerHTML = originalContent;
+
+        } catch (error) {
+            console.error('Error saving symptom:', error);
+            this.showToast('Failed to save symptom. Please try again.', 'error');
+            
+            const saveButton = document.querySelector('.btn-primary');
+            saveButton.disabled = false;
+            saveButton.innerHTML = '<span class="btn-icon">💾</span>Log Symptom';
+        }
+    }
+
+    // Delete individual symptom
+    async deleteSymptom(symptomId) {
+        if (!this.currentUser) {
+            this.showToast('Please sign in to delete symptoms', 'error');
+            return;
+        }
+
+        if (!confirm('Are you sure you want to delete this symptom? This action cannot be undone.')) {
+            return;
+        }
+
+        try {
+            const { doc, deleteDoc } = window.firebaseOperations;
+            await deleteDoc(doc(window.db, 'symptoms', symptomId));
+            
+            // Remove from local array
+            this.symptoms = this.symptoms.filter(s => s.id !== symptomId);
+            
+            this.showToast('Symptom deleted successfully!');
+            this.updateStats();
+            this.renderHistory();
+            this.generatePatternInsights();
+            
+            // Update photo limit status after deletion
+            this.updatePhotoLimitStatus();
+            
+        } catch (error) {
+            console.error('Error deleting symptom:', error);
+            this.showToast('Failed to delete symptom', 'error');
+        }
+    }
+
+    // Bulk delete all user data
+    async deleteAllUserData() {
+        if (!this.currentUser) {
+            this.showToast('Please sign in first', 'error');
+            return;
+        }
+
+        const confirmText = 'DELETE';
+        const userInput = prompt(`This will permanently delete ALL your health data including ${this.symptoms.length} symptoms, ${this.appointments.length} appointments, and ${this.sleepEntries.length} sleep entries. This cannot be undone.\n\nType "${confirmText}" to confirm:`);
+        
+        if (userInput !== confirmText) {
+            this.showToast('Deletion cancelled', 'error');
+            return;
+        }
+
+        this.showLoadingOverlay(true);
+
+        try {
+            const { collection, query, where, getDocs, deleteDoc, doc } = window.firebaseOperations;
+            let deletedCount = 0;
+
+            // Delete all symptoms
+            const symptomsQuery = query(
+                collection(window.db, 'symptoms'),
+                where('userId', '==', this.currentUser.uid)
+            );
+            const symptomsSnapshot = await getDocs(symptomsQuery);
+            for (const docSnapshot of symptomsSnapshot.docs) {
+                await deleteDoc(doc(window.db, 'symptoms', docSnapshot.id));
+                deletedCount++;
+            }
+
+            // Delete all appointments
+            const appointmentsQuery = query(
+                collection(window.db, 'appointments'),
+                where('userId', '==', this.currentUser.uid)
+            );
+            const appointmentsSnapshot = await getDocs(appointmentsQuery);
+            for (const docSnapshot of appointmentsSnapshot.docs) {
+                await deleteDoc(doc(window.db, 'appointments', docSnapshot.id));
+                deletedCount++;
+            }
+
+            // Delete all sleep entries
+            const sleepQuery = query(
+                collection(window.db, 'sleep'),
+                where('userId', '==', this.currentUser.uid)
+            );
+            const sleepSnapshot = await getDocs(sleepQuery);
+            for (const docSnapshot of sleepSnapshot.docs) {
+                await deleteDoc(doc(window.db, 'sleep', docSnapshot.id));
+                deletedCount++;
+            }
+
+            // Clear local arrays
+            this.symptoms = [];
+            this.appointments = [];
+            this.sleepEntries = [];
+
+            this.updateStats();
+            this.renderHistory();
+            this.renderSleepHistory();
+            this.generatePatternInsights();
+            
+            // Update photo limit status after clearing all data
+            this.updatePhotoLimitStatus();
+
+            this.showToast(`Successfully deleted all ${deletedCount} records`, 'success');
+
+        } catch (error) {
+            console.error('Error deleting user data:', error);
+            this.showToast('Failed to delete some data. Please try again.', 'error');
+        } finally {
+            this.showLoadingOverlay(false);
         }
     }
 }
@@ -1425,12 +2112,6 @@ function quickLogSymptom() {
     }
 }
 
-function downloadReportPDF() {
-    if (window.symptomTracker) {
-        window.symptomTracker.generatePDFReport();
-    }
-}
-
 function exportSleepData() {
     if (window.symptomTracker) {
         window.symptomTracker.exportSleepData();
@@ -1443,8 +2124,83 @@ function exportLifeImpactData() {
     }
 }
 
+function downloadMedicalReport() {
+    if (window.symptomTracker) {
+        window.symptomTracker.downloadMedicalReport();
+    }
+}
+
+function deleteSymptom(symptomId) {
+    if (window.symptomTracker) {
+        window.symptomTracker.deleteSymptom(symptomId);
+    }
+}
+
+function deleteAllUserData() {
+    if (window.symptomTracker) {
+        window.symptomTracker.deleteAllUserData();
+    }
+}
+
+// FIXED: Photo handling functions with validation
+function handlePhotoSelect(input) {
+    const file = input.files[0];
+    const warningElement = document.getElementById('photo-size-warning');
+    const metaElement = document.getElementById('photo-meta');
+    
+    if (!file) return;
+
+    // Check if symptom tracker is available and validate
+    if (window.symptomTracker) {
+        const validation = window.symptomTracker.validatePhotoUpload(file);
+        if (!validation.valid) {
+            input.value = ''; // Clear the input
+            window.symptomTracker.showToast(validation.message, 'error');
+            return;
+        }
+    }
+
+    // Show file size warning if needed (but allow files under 1MB)
+    if (file.size > 1024 * 1024) {
+        warningElement.style.display = 'block';
+        warningElement.style.color = '#ef4444';
+        warningElement.innerHTML = '⚠️ File too large! Please choose an image under 1MB';
+        input.value = ''; // Clear the input
+        return;
+    } else if (warningElement) {
+        warningElement.style.display = 'none';
+    }
+    
+    // Show file info
+    if (metaElement) {
+        const fileSizeKB = Math.round(file.size / 1024);
+        metaElement.textContent = `${file.name} (${fileSizeKB}KB)`;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const preview = document.getElementById('photo-preview');
+        const image = document.getElementById('preview-image');
+        if (image && preview) {
+            image.src = e.target.result;
+            preview.style.display = 'flex';
+        }
+    };
+    reader.readAsDataURL(file);
+}
+
+function removePhoto() {
+    const input = document.getElementById('symptom-photo');
+    const preview = document.getElementById('photo-preview');
+    const warningElement = document.getElementById('photo-size-warning');
+    
+    if (input) input.value = '';
+    if (preview) preview.style.display = 'none';
+    if (warningElement) warningElement.style.display = 'none';
+}
+
 // Initialize the application when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
     window.symptomTracker = new SymptomTracker();
-    console.log('Enhanced MedPrep Tracker with Life Impact and Sleep Tracking loaded successfully!');
+    console.log('Enhanced MedPrep Tracker with Fixed Photo Limit Logic loaded successfully!');
 });
