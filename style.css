@@ -10,6 +10,8 @@
     --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
     --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    --sleep-gradient: linear-gradient(135deg, #667eea 0%, #8b5cf6 100%);
+    --impact-gradient: linear-gradient(135deg, #f59e0b 0%, #e11d48 100%);
     --glass-bg: rgba(255, 255, 255, 0.08);
     --glass-border: rgba(255, 255, 255, 0.18);
     --text-primary: #ffffff;
@@ -97,56 +99,17 @@ body {
     animation: floatUp 15s infinite linear;
 }
 
-.particle:nth-child(1) {
-    width: 4px;
-    height: 4px;
-    left: 10%;
-    animation-delay: 0s;
-}
-
-.particle:nth-child(2) {
-    width: 6px;
-    height: 6px;
-    left: 30%;
-    animation-delay: -3s;
-}
-
-.particle:nth-child(3) {
-    width: 3px;
-    height: 3px;
-    left: 60%;
-    animation-delay: -6s;
-}
-
-.particle:nth-child(4) {
-    width: 5px;
-    height: 5px;
-    left: 80%;
-    animation-delay: -9s;
-}
-
-.particle:nth-child(5) {
-    width: 4px;
-    height: 4px;
-    left: 90%;
-    animation-delay: -12s;
-}
+.particle:nth-child(1) { width: 4px; height: 4px; left: 10%; animation-delay: 0s; }
+.particle:nth-child(2) { width: 6px; height: 6px; left: 30%; animation-delay: -3s; }
+.particle:nth-child(3) { width: 3px; height: 3px; left: 60%; animation-delay: -6s; }
+.particle:nth-child(4) { width: 5px; height: 5px; left: 80%; animation-delay: -9s; }
+.particle:nth-child(5) { width: 4px; height: 4px; left: 90%; animation-delay: -12s; }
 
 @keyframes floatUp {
-    0% {
-        transform: translateY(100vh) rotate(0deg);
-        opacity: 0;
-    }
-    10% {
-        opacity: 1;
-    }
-    90% {
-        opacity: 1;
-    }
-    100% {
-        transform: translateY(-100px) rotate(360deg);
-        opacity: 0;
-    }
+    0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
 }
 
 /* Container */
@@ -535,6 +498,122 @@ body {
     color: rgba(255, 255, 255, 0.4);
 }
 
+/* NEW: Life Impact Section Styles */
+.life-impact-section {
+    background: rgba(245, 87, 108, 0.05);
+    border: 1px solid rgba(245, 87, 108, 0.2);
+    border-radius: 12px;
+    padding: 20px;
+    margin: 20px 0;
+}
+
+.life-impact-section .form-label {
+    color: #f093fb;
+    font-size: 1rem;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.impact-category {
+    margin-bottom: 20px;
+}
+
+.impact-category h4 {
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.radio-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.radio-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 0.85rem;
+}
+
+.radio-option:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.radio-option input[type="radio"] {
+    display: none;
+}
+
+.radio-custom {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    position: relative;
+    transition: var(--transition);
+    flex-shrink: 0;
+}
+
+.radio-option input[type="radio"]:checked + .radio-custom {
+    border-color: #f093fb;
+    background: var(--impact-gradient);
+}
+
+.radio-option input[type="radio"]:checked + .radio-custom::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 6px;
+    height: 6px;
+    background: white;
+    border-radius: 50%;
+}
+
+/* NEW: Sleep Tracker Styles */
+.sleep-form-card, .sleep-stats-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--border-radius);
+    padding: 30px;
+    box-shadow: var(--shadow-glass);
+}
+
+.sleep-form-card .card-icon {
+    color: #8b5cf6;
+}
+
+.sleep-quality-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.sleep-timeline-container {
+    margin-top: 20px;
+}
+
+.sleep-timeline-container h4 {
+    color: var(--text-primary);
+    font-size: 1rem;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sleep-item {
+    border-left-color: var(--sleep-gradient) !important;
+}
+
 /* Severity Slider */
 .severity-slider {
     display: flex;
@@ -581,7 +660,7 @@ body {
     color: var(--text-primary);
 }
 
-.severity-label {
+.severity-label, .sleep-quality-label {
     font-size: 0.8rem;
     color: var(--text-secondary);
 }
@@ -870,6 +949,31 @@ body {
     font-size: 12px;
 }
 
+/* NEW: Export Section Styles */
+.export-section {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.export-section h4 {
+    color: #c4b5fd;
+    margin-bottom: 15px;
+    font-size: 1rem;
+}
+
+.export-section .btn-secondary {
+    background: var(--impact-gradient);
+    color: white;
+    border: none;
+}
+
+.export-section .btn-secondary:hover {
+    background: var(--secondary-gradient);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(245, 87, 108, 0.4);
+}
+
 /* Report Preview */
 .report-preview {
     min-height: 200px;
@@ -1001,122 +1105,6 @@ body {
     font-size: 1.1rem;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-    .tracker-grid {
-        grid-template-columns: 1fr;
-        gap: 20px;
-    }
-    
-    .history-grid, .reports-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .appointment-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .nav-tabs {
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-    
-    .tab-btn {
-        flex: 1;
-        min-width: 120px;
-        justify-content: center;
-    }
-    
-    .logo-section {
-        flex-direction: column;
-        text-align: center;
-        gap: 15px;
-    }
-    
-    .logo-text h1 {
-        font-size: 2rem;
-    }
-    
-    .filter-group {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    
-    .form-actions {
-        flex-direction: column;
-    }
-    
-    .checkbox-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .quick-stats {
-        flex-direction: column;
-        gap: 15px;
-    }
-    
-    .fab {
-        bottom: 20px;
-        right: 20px;
-        width: 50px;
-        height: 50px;
-    }
-    
-    .fab-icon {
-        font-size: 1.2rem;
-    }
-}
-
-/* Dark Mode Enhancements */
-@media (prefers-color-scheme: dark) {
-    body {
-        background: #000011;
-    }
-    
-    .animated-bg {
-        background: linear-gradient(135deg, #000011 0%, #1a0a2e 25%, #0f1419 50%, #0a0f1c 75%, #000011 100%);
-    }
-}
-
-/* Additional Animations */
-.glass-card {
-    animation: cardFloat 6s ease-in-out infinite;
-}
-
-@keyframes cardFloat {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-5px); }
-}
-
-.body-part:hover {
-    animation: bodyPartGlow 1.5s ease-in-out infinite;
-}
-
-@keyframes bodyPartGlow {
-    0%, 100% { filter: drop-shadow(0 0 5px rgba(102, 126, 234, 0.3)); }
-    50% { filter: drop-shadow(0 0 15px rgba(102, 126, 234, 0.8)); }
-}
-
-/* Advanced Form Styling */
-.form-input:focus {
-    animation: inputFocus 0.3s ease-out;
-}
-
-@keyframes inputFocus {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.02); }
-    100% { transform: scale(1); }
-}
-
-/* Micro-interactions */
-.btn-primary:active {
-    transform: translateY(0px) scale(0.98);
-}
-
-.tab-btn:active {
-    transform: translateY(1px);
-}
-
 /* Authentication Styles */
 .auth-container {
     position: fixed;
@@ -1209,4 +1197,158 @@ body {
     margin-top: 20px;
     font-size: 0.8rem;
     color: var(--text-secondary);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .tracker-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .history-grid, .reports-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .appointment-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .nav-tabs {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .tab-btn {
+        flex: 1;
+        min-width: 100px;
+        justify-content: center;
+    }
+    
+    .logo-section {
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+    }
+    
+    .logo-text h1 {
+        font-size: 2rem;
+    }
+    
+    .filter-group {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .checkbox-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .quick-stats {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .fab {
+        bottom: 20px;
+        right: 20px;
+        width: 50px;
+        height: 50px;
+    }
+    
+    .fab-icon {
+        font-size: 1.2rem;
+    }
+    
+    .radio-group {
+        grid-template-columns: 1fr;
+    }
+    
+    .life-impact-section {
+        padding: 15px;
+    }
+    
+    .export-section > div {
+        flex-direction: column;
+        gap: 10px;
+    }
+}
+
+/* Dark Mode Enhancements */
+@media (prefers-color-scheme: dark) {
+    body {
+        background: #000011;
+    }
+    
+    .animated-bg {
+        background: linear-gradient(135deg, #000011 0%, #1a0a2e 25%, #0f1419 50%, #0a0f1c 75%, #000011 100%);
+    }
+}
+
+/* Additional Animations */
+.glass-card {
+    animation: cardFloat 6s ease-in-out infinite;
+}
+
+@keyframes cardFloat {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-5px); }
+}
+
+.body-part:hover {
+    animation: bodyPartGlow 1.5s ease-in-out infinite;
+}
+
+@keyframes bodyPartGlow {
+    0%, 100% { filter: drop-shadow(0 0 5px rgba(102, 126, 234, 0.3)); }
+    50% { filter: drop-shadow(0 0 15px rgba(102, 126, 234, 0.8)); }
+}
+
+/* Advanced Form Styling */
+.form-input:focus {
+    animation: inputFocus 0.3s ease-out;
+}
+
+@keyframes inputFocus {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+}
+
+/* Micro-interactions */
+.btn-primary:active {
+    transform: translateY(0px) scale(0.98);
+}
+
+.tab-btn:active {
+    transform: translateY(1px);
+}
+
+.radio-option:active {
+    transform: scale(0.98);
+}
+
+/* Life Impact Visual Enhancements */
+.impact-category:nth-child(1) .radio-option input[type="radio"]:checked + .radio-custom {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.impact-category:nth-child(2) .radio-option input[type="radio"]:checked + .radio-custom {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+}
+
+.impact-category:nth-child(3) .radio-option input[type="radio"]:checked + .radio-custom {
+    background: linear-gradient(135deg, #06b6d4, #0891b2);
+}
+
+.impact-category:nth-child(4) .radio-option input[type="radio"]:checked + .radio-custom {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.impact-category:nth-child(5) .radio-option input[type="radio"]:checked + .radio-custom {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
 }

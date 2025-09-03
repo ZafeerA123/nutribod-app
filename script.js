@@ -1,8 +1,9 @@
-// Symptom Tracker Application with Complete Functionality
+// Enhanced Symptom Tracker Application with Life Impact and Sleep Tracking
 class SymptomTracker {
     constructor() {
         this.symptoms = [];
         this.appointments = [];
+        this.sleepEntries = [];
         this.selectedRegion = null;
         this.currentTab = 'tracker';
         this.currentUser = null;
@@ -13,7 +14,7 @@ class SymptomTracker {
         this.setupEventListeners();
         this.updateSeverityDisplay();
         this.updateFilterOptions();
-        console.log('MedPrep Tracker initialized successfully!');
+        console.log('Enhanced MedPrep Tracker initialized successfully!');
     }
 
     setupEventListeners() {
@@ -32,6 +33,14 @@ class SymptomTracker {
             });
         }
 
+        // Sleep quality slider
+        const sleepQualitySlider = document.getElementById('sleep-quality');
+        if (sleepQualitySlider) {
+            sleepQualitySlider.addEventListener('input', (e) => {
+                this.updateSleepQualityDisplay(e.target.value);
+            });
+        }
+
         // Set default datetime to now
         const timeInput = document.getElementById('symptom-time');
         if (timeInput) {
@@ -41,11 +50,25 @@ class SymptomTracker {
             timeInput.value = localDateTime;
         }
 
+        // Set sleep bedtime and wake time defaults
+        const bedtimeInput = document.getElementById('bedtime');
+        const waketimeInput = document.getElementById('waketime');
+        if (bedtimeInput && waketimeInput) {
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            yesterday.setHours(22, 0, 0, 0); // 10 PM
+            
+            const today = new Date();
+            today.setHours(7, 0, 0, 0); // 7 AM
+            
+            bedtimeInput.value = yesterday.toISOString().slice(0, 16);
+            waketimeInput.value = today.toISOString().slice(0, 16);
+        }
+
         // Form validation listeners
         this.setupFormValidation();
     }
 
-    // FIX 1: Complete Form Validation
     setupFormValidation() {
         const requiredFields = ['symptom-type', 'symptom-description'];
         
@@ -66,7 +89,6 @@ class SymptomTracker {
         let isValid = true;
         let errorMessage = '';
 
-        // Remove existing error styling
         this.clearFieldError(fieldId);
 
         switch(fieldId) {
@@ -101,7 +123,6 @@ class SymptomTracker {
         field.style.borderColor = '#ef4444';
         field.style.background = 'rgba(239, 68, 68, 0.1)';
 
-        // Add error message
         let errorDiv = field.parentNode.querySelector('.field-error');
         if (!errorDiv) {
             errorDiv = document.createElement('div');
@@ -138,12 +159,10 @@ class SymptomTracker {
         return isTypeValid && isDescriptionValid;
     }
 
-    // FIX 2: Update Filter Options to Include All Body Regions
     updateFilterOptions() {
         const filterSelect = document.getElementById('filter-region');
         if (!filterSelect) return;
 
-        // Get all unique body regions from the SVG
         const bodyRegions = [
             'head', 'neck', 'left-shoulder', 'right-shoulder', 'left-upper-arm', 'right-upper-arm',
             'left-elbow', 'right-elbow', 'left-forearm', 'right-forearm', 'left-hand', 'right-hand',
@@ -152,16 +171,41 @@ class SymptomTracker {
             'left-foot', 'right-foot'
         ];
 
-        // Clear existing options except the first one
         filterSelect.innerHTML = '<option value="">All body regions</option>';
 
-        // Add all regions
         bodyRegions.forEach(region => {
             const option = document.createElement('option');
             option.value = region;
             option.textContent = region.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase());
             filterSelect.appendChild(option);
         });
+    }
+
+    // NEW: Get Life Impact Data from form
+    getLifeImpactData() {
+        const impactData = {};
+        
+        // Work impact
+        const workImpact = document.querySelector('input[name="work-impact"]:checked');
+        impactData.work = workImpact ? workImpact.value : 'none';
+        
+        // Sleep impact
+        const sleepImpact = document.querySelector('input[name="sleep-impact"]:checked');
+        impactData.sleep = sleepImpact ? sleepImpact.value : 'none';
+        
+        // Social impact
+        const socialImpact = document.querySelector('input[name="social-impact"]:checked');
+        impactData.social = socialImpact ? socialImpact.value : 'none';
+        
+        // Mobility impact
+        const mobilityImpact = document.querySelector('input[name="mobility-impact"]:checked');
+        impactData.mobility = mobilityImpact ? mobilityImpact.value : 'none';
+        
+        // Mood impact
+        const moodImpact = document.querySelector('input[name="mood-impact"]:checked');
+        impactData.mood = moodImpact ? moodImpact.value : 'none';
+        
+        return impactData;
     }
 
     // Load user data from Firestore
@@ -205,10 +249,28 @@ class SymptomTracker {
                 });
             });
 
+            // Load sleep entries
+            const sleepRef = collection(window.db, 'sleep');
+            const sleepQuery = query(
+                sleepRef,
+                where('userId', '==', this.currentUser.uid),
+                orderBy('bedtime', 'desc')
+            );
+            const sleepSnapshot = await getDocs(sleepQuery);
+            
+            this.sleepEntries = [];
+            sleepSnapshot.forEach((doc) => {
+                this.sleepEntries.push({
+                    id: doc.id,
+                    ...doc.data()
+                });
+            });
+
             this.updateStats();
             this.renderHistory();
-            this.generatePatternInsights(); // FIX 3: Generate real patterns
-            console.log(`Loaded ${this.symptoms.length} symptoms and ${this.appointments.length} appointments for user`);
+            this.renderSleepHistory();
+            this.generatePatternInsights();
+            console.log(`Loaded ${this.symptoms.length} symptoms, ${this.appointments.length} appointments, and ${this.sleepEntries.length} sleep entries for user`);
 
         } catch (error) {
             console.error('Error loading user data:', error);
@@ -217,18 +279,15 @@ class SymptomTracker {
     }
 
     selectBodyPart(region) {
-        // Remove previous selections
         document.querySelectorAll('.body-part.selected').forEach(part => {
             part.classList.remove('selected');
         });
 
-        // Add selection to clicked part
         const selectedPart = document.querySelector(`[data-region="${region}"]`);
         if (selectedPart) {
             selectedPart.classList.add('selected');
         }
 
-        // Show form
         this.selectedRegion = region;
         this.showSymptomForm(region);
     }
@@ -245,7 +304,6 @@ class SymptomTracker {
             regionDisplay.textContent = region.replace('-', ' ').toUpperCase();
         }
 
-        // Focus on first input
         setTimeout(() => {
             const firstInput = document.getElementById('symptom-type');
             if (firstInput) firstInput.focus();
@@ -262,7 +320,6 @@ class SymptomTracker {
         const severityValue = value || slider.value;
         display.textContent = severityValue;
 
-        // Update severity label
         const labels = {
             1: 'Very Mild', 2: 'Very Mild', 
             3: 'Mild', 4: 'Mild',
@@ -275,7 +332,6 @@ class SymptomTracker {
             label.textContent = labels[severityValue] || 'Moderate';
         }
 
-        // Update slider color based on severity
         const colors = {
             1: '#22c55e', 2: '#22c55e',
             3: '#84cc16', 4: '#84cc16',
@@ -288,13 +344,43 @@ class SymptomTracker {
         slider.style.background = `linear-gradient(to right, ${color} 0%, ${color} ${severityValue * 10}%, rgba(255,255,255,0.1) ${severityValue * 10}%, rgba(255,255,255,0.1) 100%)`;
     }
 
+    // NEW: Update sleep quality display
+    updateSleepQualityDisplay(value = null) {
+        const slider = document.getElementById('sleep-quality');
+        const display = document.getElementById('sleep-quality-display');
+        const label = document.querySelector('.sleep-quality-label');
+        
+        if (!slider || !display) return;
+
+        const qualityValue = value || slider.value;
+        display.textContent = qualityValue;
+
+        const labels = {
+            1: 'Terrible', 2: 'Poor', 
+            3: 'Fair', 4: 'Good',
+            5: 'Excellent'
+        };
+
+        if (label) {
+            label.textContent = labels[qualityValue] || 'Fair';
+        }
+
+        const colors = {
+            1: '#dc2626', 2: '#ef4444',
+            3: '#eab308', 4: '#84cc16',
+            5: '#22c55e'
+        };
+
+        const color = colors[qualityValue] || '#eab308';
+        slider.style.background = `linear-gradient(to right, ${color} 0%, ${color} ${qualityValue * 20}%, rgba(255,255,255,0.1) ${qualityValue * 20}%, rgba(255,255,255,0.1) 100%)`;
+    }
+
     async saveSymptom() {
         if (!this.currentUser) {
             this.showToast('Please sign in to save symptoms', 'error');
             return;
         }
 
-        // FIX 1: Complete form validation
         if (!this.validateForm()) {
             return;
         }
@@ -305,6 +391,9 @@ class SymptomTracker {
         const time = document.getElementById('symptom-time')?.value;
         const notes = document.getElementById('symptom-notes')?.value;
 
+        // Get life impact data
+        const impactData = this.getLifeImpactData();
+
         const symptom = {
             userId: this.currentUser.uid,
             region: this.selectedRegion,
@@ -313,11 +402,11 @@ class SymptomTracker {
             severity: parseInt(severity),
             datetime: time,
             notes: notes,
+            lifeImpact: impactData,
             created: new Date().toISOString()
         };
 
         try {
-            // Show loading state
             const saveButton = document.querySelector('.btn-primary');
             const originalContent = saveButton.innerHTML;
             saveButton.disabled = true;
@@ -326,7 +415,6 @@ class SymptomTracker {
             const { collection, addDoc } = window.firebaseOperations;
             const docRef = await addDoc(collection(window.db, 'symptoms'), symptom);
             
-            // Add to local array with the new ID
             this.symptoms.unshift({
                 id: docRef.id,
                 ...symptom
@@ -336,9 +424,8 @@ class SymptomTracker {
             this.clearForm();
             this.updateStats();
             this.renderHistory();
-            this.generatePatternInsights(); // Update patterns
+            this.generatePatternInsights();
 
-            // Restore button
             saveButton.disabled = false;
             saveButton.innerHTML = originalContent;
 
@@ -346,14 +433,142 @@ class SymptomTracker {
             console.error('Error saving symptom:', error);
             this.showToast('Failed to save symptom. Please try again.', 'error');
             
-            // Restore button
             const saveButton = document.querySelector('.btn-primary');
             saveButton.disabled = false;
             saveButton.innerHTML = '<span class="btn-icon">💾</span>Log Symptom';
         }
     }
 
-    // FIX 3: Real Pattern Detection Analysis
+    // NEW: Save sleep entry
+    async saveSleep() {
+        if (!this.currentUser) {
+            this.showToast('Please sign in to save sleep data', 'error');
+            return;
+        }
+
+        const bedtime = document.getElementById('bedtime')?.value;
+        const waketime = document.getElementById('waketime')?.value;
+        const quality = document.getElementById('sleep-quality')?.value;
+        const notes = document.getElementById('sleep-notes')?.value;
+
+        if (!bedtime || !waketime) {
+            this.showToast('Please enter both bedtime and wake time', 'error');
+            return;
+        }
+
+        // Calculate sleep duration
+        const bedDate = new Date(bedtime);
+        const wakeDate = new Date(waketime);
+        const duration = (wakeDate - bedDate) / (1000 * 60 * 60); // hours
+
+        const sleepEntry = {
+            userId: this.currentUser.uid,
+            bedtime: bedtime,
+            waketime: waketime,
+            duration: duration,
+            quality: parseInt(quality),
+            notes: notes,
+            created: new Date().toISOString()
+        };
+
+        try {
+            const saveButton = document.querySelector('#save-sleep-btn');
+            const originalContent = saveButton.innerHTML;
+            saveButton.disabled = true;
+            saveButton.innerHTML = '<div class="loading-spinner" style="width: 16px; height: 16px; margin: 0;"></div> Saving...';
+
+            const { collection, addDoc } = window.firebaseOperations;
+            const docRef = await addDoc(collection(window.db, 'sleep'), sleepEntry);
+            
+            this.sleepEntries.unshift({
+                id: docRef.id,
+                ...sleepEntry
+            });
+
+            this.showToast('Sleep entry logged successfully!');
+            this.renderSleepHistory();
+            this.updateStats();
+
+            saveButton.disabled = false;
+            saveButton.innerHTML = originalContent;
+
+        } catch (error) {
+            console.error('Error saving sleep entry:', error);
+            this.showToast('Failed to save sleep entry. Please try again.', 'error');
+            
+            const saveButton = document.querySelector('#save-sleep-btn');
+            saveButton.disabled = false;
+            saveButton.innerHTML = '<span class="btn-icon">💾</span>Log Sleep';
+        }
+    }
+
+    // NEW: Render sleep history
+    renderSleepHistory() {
+        const timeline = document.getElementById('sleep-timeline');
+        if (!timeline) return;
+
+        if (this.sleepEntries.length === 0) {
+            timeline.innerHTML = '<p style="color: rgba(255,255,255,0.6); text-align: center; padding: 40px;">No sleep data logged yet. Start tracking your sleep patterns!</p>';
+            return;
+        }
+
+        const sortedEntries = [...this.sleepEntries].sort((a, b) => 
+            new Date(b.bedtime) - new Date(a.bedtime)
+        );
+
+        timeline.innerHTML = sortedEntries.slice(0, 10).map(entry => `
+            <div class="timeline-item sleep-item" style="
+                background: rgba(255,255,255,0.05);
+                border-radius: 12px;
+                padding: 20px;
+                margin-bottom: 15px;
+                border-left: 4px solid ${this.getSleepQualityColor(entry.quality)};
+                transition: all 0.3s ease;
+                cursor: pointer;
+            " onmouseover="this.style.background='rgba(255,255,255,0.1)'" 
+               onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                    <div>
+                        <h4 style="color: #c4b5fd; font-size: 1.1rem; margin-bottom: 5px;">
+                            Sleep Session
+                        </h4>
+                        <p style="color: rgba(255,255,255,0.9); margin-bottom: 8px;">
+                            ${entry.duration.toFixed(1)} hours of sleep
+                        </p>
+                        <p style="color: rgba(255,255,255,0.7); font-size: 0.9rem;">
+                            Bedtime: ${new Date(entry.bedtime).toLocaleString([], {month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit'})}
+                            → Wake: ${new Date(entry.waketime).toLocaleString([], {month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit'})}
+                        </p>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="
+                            background: ${this.getSleepQualityColor(entry.quality)};
+                            color: white;
+                            padding: 4px 12px;
+                            border-radius: 20px;
+                            font-size: 0.8rem;
+                            font-weight: 600;
+                            margin-bottom: 5px;
+                        ">
+                            Quality: ${entry.quality}/5
+                        </div>
+                    </div>
+                </div>
+                ${entry.notes ? `<p style="color: rgba(255,255,255,0.7); font-style: italic; margin-top: 10px;">Notes: ${entry.notes}</p>` : ''}
+            </div>
+        `).join('');
+    }
+
+    // NEW: Get sleep quality color
+    getSleepQualityColor(quality) {
+        const colors = {
+            1: '#dc2626', 2: '#ef4444',
+            3: '#eab308', 4: '#84cc16',
+            5: '#22c55e'
+        };
+        return colors[quality] || '#eab308';
+    }
+
     generatePatternInsights() {
         const insightsDiv = document.getElementById('pattern-insights');
         if (!insightsDiv || this.symptoms.length < 3) {
@@ -363,7 +578,6 @@ class SymptomTracker {
             return;
         }
 
-        // Analyze patterns in the data
         const patterns = this.analyzeSymptomPatterns();
         
         if (patterns.length === 0) {
@@ -421,106 +635,206 @@ class SymptomTracker {
             });
         }
 
-        // Pattern 2: Severity trends
-        const recentSymptoms = this.symptoms.slice(0, 10); // Last 10 symptoms
-        if (recentSymptoms.length >= 5) {
-            const avgRecentSeverity = recentSymptoms.reduce((sum, s) => sum + s.severity, 0) / recentSymptoms.length;
-            const overallAvg = this.symptoms.reduce((sum, s) => sum + s.severity, 0) / this.symptoms.length;
-            
-            if (avgRecentSeverity > overallAvg + 1) {
-                patterns.push({
-                    title: 'Increasing Severity Trend',
-                    description: `Your recent symptoms (${avgRecentSeverity.toFixed(1)}/10) are more severe than your overall average (${overallAvg.toFixed(1)}/10). This upward trend may warrant medical attention.`,
-                    confidence: 'High',
-                    color: '#ef4444'
-                });
-            } else if (avgRecentSeverity < overallAvg - 1) {
-                patterns.push({
-                    title: 'Improving Trend',
-                    description: `Your recent symptoms (${avgRecentSeverity.toFixed(1)}/10) are less severe than your overall average (${overallAvg.toFixed(1)}/10). You may be on a positive trajectory.`,
-                    confidence: 'Medium',
-                    color: '#22c55e'
-                });
-            }
+        // Pattern 2: Life impact analysis
+        const impactAnalysis = this.analyzeLifeImpactPatterns();
+        patterns.push(...impactAnalysis);
+
+        // Pattern 3: Sleep correlation
+        const sleepCorrelation = this.analyzeSleepSymptomCorrelation();
+        if (sleepCorrelation) {
+            patterns.push(sleepCorrelation);
         }
 
-        // Pattern 3: Time-based patterns
-        const timePatterns = this.analyzeTimePatterns();
-        patterns.push(...timePatterns);
-
-        // Pattern 4: Symptom type clustering
-        const typeCounts = {};
-        this.symptoms.forEach(symptom => {
-            typeCounts[symptom.type] = (typeCounts[symptom.type] || 0) + 1;
-        });
-
-        const dominantType = Object.keys(typeCounts).reduce((a, b) => 
-            typeCounts[a] > typeCounts[b] ? a : b, ''
-        );
-
-        if (typeCounts[dominantType] >= 3) {
-            patterns.push({
-                title: 'Recurring Symptom Type',
-                description: `You frequently experience ${dominantType} symptoms (${typeCounts[dominantType]} occurrences). Consider tracking potential triggers.`,
-                confidence: typeCounts[dominantType] >= 5 ? 'High' : 'Medium',
-                color: '#8b5cf6'
-            });
-        }
-
-        return patterns.slice(0, 4); // Limit to 4 most significant patterns
+        return patterns.slice(0, 4);
     }
 
-    analyzeTimePatterns() {
+    // NEW: Analyze life impact patterns
+    analyzeLifeImpactPatterns() {
         const patterns = [];
-        
-        // Group symptoms by hour of day
-        const hourCounts = {};
+        const impactCounts = {
+            work: { none: 0, mild: 0, moderate: 0, severe: 0 },
+            sleep: { none: 0, mild: 0, moderate: 0, severe: 0 },
+            social: { none: 0, mild: 0, moderate: 0, severe: 0 },
+            mobility: { none: 0, mild: 0, moderate: 0, severe: 0 },
+            mood: { none: 0, mild: 0, moderate: 0, severe: 0 }
+        };
+
         this.symptoms.forEach(symptom => {
-            const hour = new Date(symptom.datetime).getHours();
-            hourCounts[hour] = (hourCounts[hour] || 0) + 1;
+            if (symptom.lifeImpact) {
+                Object.keys(impactCounts).forEach(category => {
+                    const impact = symptom.lifeImpact[category] || 'none';
+                    if (impactCounts[category][impact] !== undefined) {
+                        impactCounts[category][impact]++;
+                    }
+                });
+            }
         });
 
-        // Find peak hours
-        const maxCount = Math.max(...Object.values(hourCounts));
-        const peakHours = Object.keys(hourCounts).filter(hour => hourCounts[hour] === maxCount);
-
-        if (maxCount >= 3 && peakHours.length <= 2) {
-            const timeRange = peakHours.map(h => {
-                const hour12 = h % 12 || 12;
-                const ampm = h < 12 ? 'AM' : 'PM';
-                return `${hour12}:00 ${ampm}`;
-            }).join(' and ');
-
-            patterns.push({
-                title: 'Time-Based Pattern',
-                description: `Your symptoms often occur around ${timeRange} (${maxCount} occurrences). Consider what activities or meals happen around this time.`,
-                confidence: maxCount >= 4 ? 'High' : 'Medium',
-                color: '#06b6d4'
-            });
-        }
+        // Find most impacted areas
+        Object.keys(impactCounts).forEach(category => {
+            const severeCounts = impactCounts[category].severe + impactCounts[category].moderate;
+            const total = Object.values(impactCounts[category]).reduce((a, b) => a + b, 0);
+            
+            if (total >= 3 && severeCounts >= 2) {
+                patterns.push({
+                    title: `${category.charAt(0).toUpperCase() + category.slice(1)} Impact Pattern`,
+                    description: `Your symptoms significantly impact your ${category} in ${severeCounts} out of ${total} recorded instances. This functional impact is important to discuss with your doctor.`,
+                    confidence: severeCounts >= 3 ? 'High' : 'Medium',
+                    color: '#e11d48'
+                });
+            }
+        });
 
         return patterns;
     }
 
+    // NEW: Analyze sleep-symptom correlation
+    analyzeSleepSymptomCorrelation() {
+        if (this.sleepEntries.length < 3 || this.symptoms.length < 3) {
+            return null;
+        }
+
+        let poorSleepSymptoms = 0;
+        let goodSleepSymptoms = 0;
+        let totalCorrelations = 0;
+
+        this.symptoms.forEach(symptom => {
+            const symptomDate = new Date(symptom.datetime);
+            
+            // Find sleep entry from the night before
+            const sleepEntry = this.sleepEntries.find(sleep => {
+                const sleepDate = new Date(sleep.bedtime);
+                const timeDiff = Math.abs(symptomDate - sleepDate) / (1000 * 60 * 60);
+                return timeDiff <= 24; // Within 24 hours
+            });
+
+            if (sleepEntry) {
+                totalCorrelations++;
+                if (sleepEntry.quality <= 2 && symptom.severity >= 6) {
+                    poorSleepSymptoms++;
+                } else if (sleepEntry.quality >= 4 && symptom.severity <= 4) {
+                    goodSleepSymptoms++;
+                }
+            }
+        });
+
+        if (totalCorrelations >= 3 && (poorSleepSymptoms >= 2 || goodSleepSymptoms >= 2)) {
+            return {
+                title: 'Sleep-Symptom Correlation',
+                description: `Analysis shows potential correlation between sleep quality and symptom severity. Consider discussing sleep hygiene with your healthcare provider.`,
+                confidence: totalCorrelations >= 5 ? 'High' : 'Medium',
+                color: '#8b5cf6'
+            };
+        }
+
+        return null;
+    }
+
+    // NEW: Export sleep data as CSV
+    exportSleepData() {
+        if (this.sleepEntries.length === 0) {
+            this.showToast('No sleep data to export', 'error');
+            return;
+        }
+
+        const headers = ['Date', 'Bedtime', 'Wake Time', 'Duration (hours)', 'Quality (1-5)', 'Notes'];
+        const csvData = [headers];
+
+        this.sleepEntries.forEach(entry => {
+            const bedDate = new Date(entry.bedtime);
+            const wakeDate = new Date(entry.waketime);
+            
+            csvData.push([
+                bedDate.toLocaleDateString(),
+                bedDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                wakeDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                entry.duration.toFixed(1),
+                entry.quality,
+                entry.notes || ''
+            ]);
+        });
+
+        const csvContent = csvData.map(row => 
+            row.map(cell => `"${cell}"`).join(',')
+        ).join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `medprep-sleep-data-${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+
+        this.showToast('Sleep data exported successfully!');
+    }
+
+    // NEW: Export life impact data as CSV
+    exportLifeImpactData() {
+        const symptomsWithImpact = this.symptoms.filter(s => s.lifeImpact);
+        
+        if (symptomsWithImpact.length === 0) {
+            this.showToast('No life impact data to export', 'error');
+            return;
+        }
+
+        const headers = ['Date', 'Time', 'Body Region', 'Symptom Type', 'Severity', 'Work Impact', 'Sleep Impact', 'Social Impact', 'Mobility Impact', 'Mood Impact', 'Description'];
+        const csvData = [headers];
+
+        symptomsWithImpact.forEach(symptom => {
+            const datetime = new Date(symptom.datetime);
+            
+            csvData.push([
+                datetime.toLocaleDateString(),
+                datetime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                symptom.region.replace('-', ' '),
+                symptom.type,
+                symptom.severity,
+                symptom.lifeImpact.work || 'none',
+                symptom.lifeImpact.sleep || 'none',
+                symptom.lifeImpact.social || 'none',
+                symptom.lifeImpact.mobility || 'none',
+                symptom.lifeImpact.mood || 'none',
+                symptom.description
+            ]);
+        });
+
+        const csvContent = csvData.map(row => 
+            row.map(cell => `"${cell}"`).join(',')
+        ).join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `medprep-life-impact-data-${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+
+        this.showToast('Life impact data exported successfully!');
+    }
+
     clearForm() {
-        // Clear form inputs
         const inputs = ['symptom-type', 'symptom-description', 'symptom-notes'];
         inputs.forEach(id => {
             const element = document.getElementById(id);
             if (element) {
                 element.value = '';
-                this.clearFieldError(id); // Clear any validation errors
+                this.clearFieldError(id);
             }
         });
 
-        // Reset severity slider
+        // Clear life impact radio buttons
+        document.querySelectorAll('input[type="radio"]').forEach(radio => {
+            radio.checked = false;
+        });
+
         const severitySlider = document.getElementById('severity');
         if (severitySlider) {
             severitySlider.value = 5;
             this.updateSeverityDisplay(5);
         }
 
-        // Reset datetime to now
         const timeInput = document.getElementById('symptom-time');
         if (timeInput) {
             const now = new Date();
@@ -529,14 +843,12 @@ class SymptomTracker {
             timeInput.value = localDateTime;
         }
 
-        // Hide form and show instruction
         const form = document.getElementById('symptom-form');
         const instruction = document.getElementById('instruction-text');
         
         if (form) form.style.display = 'none';
         if (instruction) instruction.style.display = 'block';
 
-        // Clear body part selection
         document.querySelectorAll('.body-part.selected').forEach(part => {
             part.classList.remove('selected');
         });
@@ -547,6 +859,7 @@ class SymptomTracker {
     updateStats() {
         const totalElement = document.getElementById('total-symptoms');
         const weekElement = document.getElementById('this-week');
+        const sleepStatsElement = document.getElementById('sleep-stats');
 
         if (totalElement) {
             totalElement.textContent = this.symptoms.length;
@@ -562,6 +875,24 @@ class SymptomTracker {
             
             weekElement.textContent = thisWeekSymptoms.length;
         }
+
+        // Update sleep stats
+        if (sleepStatsElement && this.sleepEntries.length > 0) {
+            const recentSleep = this.sleepEntries.slice(0, 7);
+            const avgDuration = recentSleep.reduce((sum, entry) => sum + entry.duration, 0) / recentSleep.length;
+            const avgQuality = recentSleep.reduce((sum, entry) => sum + entry.quality, 0) / recentSleep.length;
+            
+            sleepStatsElement.innerHTML = `
+                <div class="stat">
+                    <span class="stat-number">${avgDuration.toFixed(1)}h</span>
+                    <span class="stat-label">Avg Sleep</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number">${avgQuality.toFixed(1)}/5</span>
+                    <span class="stat-label">Avg Quality</span>
+                </div>
+            `;
+        }
     }
 
     renderHistory() {
@@ -573,51 +904,65 @@ class SymptomTracker {
             return;
         }
 
-        // Sort symptoms by date (newest first)
         const sortedSymptoms = [...this.symptoms].sort((a, b) => 
             new Date(b.datetime) - new Date(a.datetime)
         );
 
-        timeline.innerHTML = sortedSymptoms.map(symptom => `
-            <div class="timeline-item" style="
-                background: rgba(255,255,255,0.05);
-                border-radius: 12px;
-                padding: 20px;
-                margin-bottom: 15px;
-                border-left: 4px solid ${this.getSeverityColor(symptom.severity)};
-                transition: all 0.3s ease;
-                cursor: pointer;
-            " onmouseover="this.style.background='rgba(255,255,255,0.1)'" 
-               onmouseout="this.style.background='rgba(255,255,255,0.05)'">
-                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
-                    <div>
-                        <h4 style="color: #c4b5fd; font-size: 1.1rem; margin-bottom: 5px;">
-                            ${symptom.region.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())} - ${symptom.type}
-                        </h4>
-                        <p style="color: rgba(255,255,255,0.9); margin-bottom: 8px;">
-                            ${symptom.description}
-                        </p>
-                    </div>
-                    <div style="text-align: right;">
-                        <div style="
-                            background: ${this.getSeverityColor(symptom.severity)};
-                            color: white;
-                            padding: 4px 12px;
-                            border-radius: 20px;
-                            font-size: 0.8rem;
-                            font-weight: 600;
-                            margin-bottom: 5px;
-                        ">
-                            Severity: ${symptom.severity}/10
+        timeline.innerHTML = sortedSymptoms.map(symptom => {
+            let impactSummary = '';
+            if (symptom.lifeImpact) {
+                const impacts = Object.entries(symptom.lifeImpact)
+                    .filter(([key, value]) => value && value !== 'none')
+                    .map(([key, value]) => `${key}: ${value}`)
+                    .join(', ');
+                
+                if (impacts) {
+                    impactSummary = `<p style="color: rgba(245, 87, 108, 0.8); font-size: 0.85rem; margin-top: 8px;">Life Impact: ${impacts}</p>`;
+                }
+            }
+
+            return `
+                <div class="timeline-item" style="
+                    background: rgba(255,255,255,0.05);
+                    border-radius: 12px;
+                    padding: 20px;
+                    margin-bottom: 15px;
+                    border-left: 4px solid ${this.getSeverityColor(symptom.severity)};
+                    transition: all 0.3s ease;
+                    cursor: pointer;
+                " onmouseover="this.style.background='rgba(255,255,255,0.1)'" 
+                   onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                        <div>
+                            <h4 style="color: #c4b5fd; font-size: 1.1rem; margin-bottom: 5px;">
+                                ${symptom.region.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())} - ${symptom.type}
+                            </h4>
+                            <p style="color: rgba(255,255,255,0.9); margin-bottom: 8px;">
+                                ${symptom.description}
+                            </p>
                         </div>
-                        <div style="color: rgba(255,255,255,0.6); font-size: 0.85rem;">
-                            ${new Date(symptom.datetime).toLocaleDateString()} at ${new Date(symptom.datetime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                        <div style="text-align: right;">
+                            <div style="
+                                background: ${this.getSeverityColor(symptom.severity)};
+                                color: white;
+                                padding: 4px 12px;
+                                border-radius: 20px;
+                                font-size: 0.8rem;
+                                font-weight: 600;
+                                margin-bottom: 5px;
+                            ">
+                                Severity: ${symptom.severity}/10
+                            </div>
+                            <div style="color: rgba(255,255,255,0.6); font-size: 0.85rem;">
+                                ${new Date(symptom.datetime).toLocaleDateString()} at ${new Date(symptom.datetime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                            </div>
                         </div>
                     </div>
+                    ${impactSummary}
+                    ${symptom.notes ? `<p style="color: rgba(255,255,255,0.7); font-style: italic; margin-top: 10px;">Notes: ${symptom.notes}</p>` : ''}
                 </div>
-                ${symptom.notes ? `<p style="color: rgba(255,255,255,0.7); font-style: italic; margin-top: 10px;">Notes: ${symptom.notes}</p>` : ''}
-            </div>
-        `).join('');
+            `;
+        }).join('');
     }
 
     getSeverityColor(severity) {
@@ -638,21 +983,17 @@ class SymptomTracker {
         
         if (!toast || !toastMessage || !toastIcon) return;
 
-        // Update message and icon
         toastMessage.textContent = message;
         toastIcon.textContent = type === 'error' ? '❌' : '✅';
 
-        // Update colors
         if (type === 'error') {
             toast.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
         } else {
             toast.style.background = 'linear-gradient(135deg, #4facfe, #00f2fe)';
         }
 
-        // Show toast
         toast.classList.add('show');
 
-        // Hide after 3 seconds
         setTimeout(() => {
             toast.classList.remove('show');
         }, 3000);
@@ -708,7 +1049,6 @@ class SymptomTracker {
             return;
         }
 
-        // Get recent symptoms (last 2 weeks)
         const twoWeeksAgo = new Date();
         twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
         
@@ -716,7 +1056,9 @@ class SymptomTracker {
             new Date(symptom.datetime) >= twoWeeksAgo
         );
 
-        // Generate summary
+        // Analyze life impact
+        const impactAnalysis = this.analyzeLifeImpactForSummary(recentSymptoms);
+
         const regionCounts = {};
         const typeCounts = {};
         let totalSeverity = 0;
@@ -750,10 +1092,41 @@ class SymptomTracker {
                         <li>Most common symptom type: <strong>${mostCommonType}</strong></li>
                         <li>Average pain level: <strong>${avgSeverity}/10</strong></li>
                         <li>Total symptoms in last 2 weeks: <strong>${recentSymptoms.length}</strong></li>
+                        ${impactAnalysis}
                     ` : '<li>No recent symptoms to summarize</li>'}
                 </ul>
             </div>
         `;
+    }
+
+    // NEW: Analyze life impact for visit summary
+    analyzeLifeImpactForSummary(symptoms) {
+        const symptomsWithImpact = symptoms.filter(s => s.lifeImpact);
+        if (symptomsWithImpact.length === 0) return '';
+
+        const impactCounts = {
+            work: 0, sleep: 0, social: 0, mobility: 0, mood: 0
+        };
+
+        symptomsWithImpact.forEach(symptom => {
+            Object.keys(impactCounts).forEach(category => {
+                const impact = symptom.lifeImpact[category];
+                if (impact && impact !== 'none') {
+                    impactCounts[category]++;
+                }
+            });
+        });
+
+        const significantImpacts = Object.entries(impactCounts)
+            .filter(([key, count]) => count >= 2)
+            .map(([key, count]) => `${key} (${count} times)`)
+            .join(', ');
+
+        if (significantImpacts) {
+            return `<li><strong>Functional Impact:</strong> Symptoms significantly affected: ${significantImpacts}</li>`;
+        }
+
+        return '';
     }
 
     addQuestion() {
@@ -811,7 +1184,6 @@ class SymptomTracker {
 
         this.renderFilteredHistory(filteredSymptoms);
         
-        // Show filter results message
         if (regionFilter || dateFilter) {
             const total = filteredSymptoms.length;
             const filterText = [];
@@ -836,46 +1208,8 @@ class SymptomTracker {
             return;
         }
 
-        timeline.innerHTML = sortedSymptoms.map(symptom => `
-            <div class="timeline-item" style="
-                background: rgba(255,255,255,0.05);
-                border-radius: 12px;
-                padding: 20px;
-                margin-bottom: 15px;
-                border-left: 4px solid ${this.getSeverityColor(symptom.severity)};
-                transition: all 0.3s ease;
-                cursor: pointer;
-            " onmouseover="this.style.background='rgba(255,255,255,0.1)'" 
-               onmouseout="this.style.background='rgba(255,255,255,0.05)'">
-                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
-                    <div>
-                        <h4 style="color: #c4b5fd; font-size: 1.1rem; margin-bottom: 5px;">
-                            ${symptom.region.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())} - ${symptom.type}
-                        </h4>
-                        <p style="color: rgba(255,255,255,0.9); margin-bottom: 8px;">
-                            ${symptom.description}
-                        </p>
-                    </div>
-                    <div style="text-align: right;">
-                        <div style="
-                            background: ${this.getSeverityColor(symptom.severity)};
-                            color: white;
-                            padding: 4px 12px;
-                            border-radius: 20px;
-                            font-size: 0.8rem;
-                            font-weight: 600;
-                            margin-bottom: 5px;
-                        ">
-                            Severity: ${symptom.severity}/10
-                        </div>
-                        <div style="color: rgba(255,255,255,0.6); font-size: 0.85rem;">
-                            ${new Date(symptom.datetime).toLocaleDateString()} at ${new Date(symptom.datetime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                        </div>
-                    </div>
-                </div>
-                ${symptom.notes ? `<p style="color: rgba(255,255,255,0.7); font-style: italic; margin-top: 10px;">Notes: ${symptom.notes}</p>` : ''}
-            </div>
-        `).join('');
+        // Use the same rendering logic as renderHistory
+        this.renderHistory();
     }
 
     generateReport() {
@@ -891,7 +1225,6 @@ class SymptomTracker {
 
         this.showLoadingOverlay(true);
 
-        // Generate real report data
         setTimeout(() => {
             const reportData = this.getReportData(timeframe);
             this.showReportPreview(reportData);
@@ -916,7 +1249,6 @@ class SymptomTracker {
             new Date(symptom.datetime) >= cutoffDate
         );
 
-        // Calculate additional statistics
         const regionStats = {};
         const typeStats = {};
         const severityStats = [];
@@ -977,187 +1309,14 @@ class SymptomTracker {
                     </p>
                 </div>
             </div>
-            <button class="btn-primary" onclick="downloadReportPDF()" style="width: 100%;">
-                <span class="btn-icon">📥</span>
-                Download PDF Report
-            </button>
-        `;
-    }
-
-    // FIX 4: Real PDF Generation
-    async generatePDFReport() {
-        const timeframe = document.getElementById('report-timeframe')?.value || '1month';
-        const reportData = this.getReportData(timeframe);
-        
-        if (reportData.totalCount === 0) {
-            this.showToast('No symptoms found for the selected timeframe', 'error');
-            return;
-        }
-
-        // Create PDF content
-        const pdfContent = this.createPDFContent(reportData);
-        
-        // Generate PDF using browser's print functionality
-        const printWindow = window.open('', '_blank');
-        printWindow.document.write(`
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>MedPrep Tracker - Medical Report</title>
-                <style>
-                    body { 
-                        font-family: Arial, sans-serif; 
-                        margin: 40px; 
-                        line-height: 1.6; 
-                        color: #333;
-                    }
-                    .header { 
-                        text-align: center; 
-                        border-bottom: 2px solid #667eea; 
-                        padding-bottom: 20px; 
-                        margin-bottom: 30px; 
-                    }
-                    .section { 
-                        margin-bottom: 25px; 
-                        padding: 15px; 
-                        border-left: 3px solid #667eea; 
-                        background: #f8f9fa; 
-                    }
-                    .symptom-item { 
-                        border: 1px solid #ddd; 
-                        padding: 15px; 
-                        margin-bottom: 10px; 
-                        border-radius: 5px; 
-                    }
-                    .stats-grid { 
-                        display: grid; 
-                        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
-                        gap: 15px; 
-                        margin: 20px 0; 
-                    }
-                    .stat-box { 
-                        text-align: center; 
-                        padding: 15px; 
-                        background: #e3f2fd; 
-                        border-radius: 5px; 
-                    }
-                    .disclaimer { 
-                        background: #fff3cd; 
-                        border: 1px solid #ffeaa7; 
-                        padding: 15px; 
-                        border-radius: 5px; 
-                        margin-top: 30px; 
-                        font-size: 0.9rem; 
-                    }
-                    @media print { 
-                        body { margin: 20px; } 
-                        .no-print { display: none; } 
-                    }
-                </style>
-            </head>
-            <body>
-                ${pdfContent}
-                <div class="no-print" style="text-align: center; margin-top: 30px;">
-                    <button onclick="window.print()" style="
-                        background: #667eea; 
-                        color: white; 
-                        border: none; 
-                        padding: 12px 24px; 
-                        border-radius: 5px; 
-                        cursor: pointer; 
-                        font-size: 16px;
-                    ">Print/Save as PDF</button>
-                    <button onclick="window.close()" style="
-                        background: #6c757d; 
-                        color: white; 
-                        border: none; 
-                        padding: 12px 24px; 
-                        border-radius: 5px; 
-                        cursor: pointer; 
-                        font-size: 16px; 
-                        margin-left: 10px;
-                    ">Close</button>
-                </div>
-            </body>
-            </html>
-        `);
-        
-        printWindow.document.close();
-        printWindow.focus();
-    }
-
-    createPDFContent(reportData) {
-        const patientName = this.currentUser.displayName || this.currentUser.email?.split('@')[0] || 'Patient';
-        const reportDate = new Date().toLocaleDateString();
-        const timeframeText = {
-            '1week': 'Last Week',
-            '2weeks': 'Last 2 Weeks', 
-            '1month': 'Last Month',
-            '3months': 'Last 3 Months',
-            '6months': 'Last 6 Months'
-        };
-
-        const topRegion = Object.keys(reportData.regionStats).reduce((a, b) => 
-            reportData.regionStats[a] > reportData.regionStats[b] ? a : b, 'none'
-        );
-        const topType = Object.keys(reportData.typeStats).reduce((a, b) => 
-            reportData.typeStats[a] > reportData.typeStats[b] ? a : b, 'none'
-        );
-
-        return `
-            <div class="header">
-                <h1>MedPrep Tracker - Medical Report</h1>
-                <p><strong>Patient:</strong> ${patientName}</p>
-                <p><strong>Report Period:</strong> ${timeframeText[reportData.timeframe]} (${reportDate})</p>
-                <p><strong>Generated:</strong> ${new Date().toLocaleString()}</p>
-            </div>
-
-            <div class="section">
-                <h2>Summary Statistics</h2>
-                <div class="stats-grid">
-                    <div class="stat-box">
-                        <h3>${reportData.totalCount}</h3>
-                        <p>Total Symptoms</p>
-                    </div>
-                    <div class="stat-box">
-                        <h3>${reportData.avgSeverity}/10</h3>
-                        <p>Average Severity</p>
-                    </div>
-                    <div class="stat-box">
-                        <h3>${reportData.maxSeverity}/10</h3>
-                        <p>Peak Severity</p>
-                    </div>
-                    <div class="stat-box">
-                        <h3>${topRegion.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}</h3>
-                        <p>Most Affected Area</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="section">
-                <h2>Symptom Timeline</h2>
-                ${reportData.symptoms.map(symptom => `
-                    <div class="symptom-item">
-                        <h4>${new Date(symptom.datetime).toLocaleDateString()} - ${symptom.region.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}</h4>
-                        <p><strong>Type:</strong> ${symptom.type} | <strong>Severity:</strong> ${symptom.severity}/10</p>
-                        <p><strong>Description:</strong> ${symptom.description}</p>
-                        ${symptom.notes ? `<p><strong>Notes:</strong> ${symptom.notes}</p>` : ''}
-                    </div>
-                `).join('')}
-            </div>
-
-            <div class="section">
-                <h2>Pattern Analysis</h2>
-                <p><strong>Most Common Symptom Type:</strong> ${topType} (${reportData.typeStats[topType] || 0} occurrences)</p>
-                <p><strong>Most Affected Body Region:</strong> ${topRegion.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())} (${reportData.regionStats[topRegion] || 0} occurrences)</p>
-                <p><strong>Severity Range:</strong> ${reportData.minSeverity}/10 to ${reportData.maxSeverity}/10</p>
-                <p><strong>Average Pain Level:</strong> ${reportData.avgSeverity}/10</p>
-            </div>
-
-            <div class="disclaimer">
-                <h3>Important Medical Disclaimer</h3>
-                <p><strong>This report is for informational and tracking purposes only.</strong> It does not constitute medical advice, diagnosis, or treatment recommendations. The patterns and correlations shown are observational and should be discussed with qualified healthcare professionals. Always consult your doctor for medical concerns and before making any healthcare decisions.</p>
-                <p><em>Generated by MedPrep Tracker on ${new Date().toLocaleString()}</em></p>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-primary" onclick="downloadReportPDF()" style="flex: 1;">
+                    <span class="btn-icon">📥</span>
+                    Download PDF Report
+                </button>
+                <button class="btn-secondary" onclick="window.symptomTracker.exportLifeImpactData()">
+                    Export Impact Data
+                </button>
             </div>
         `;
     }
@@ -1175,23 +1334,19 @@ class SymptomTracker {
     }
 
     switchTab(tabName) {
-        // Hide all tab contents
         document.querySelectorAll('.tab-content').forEach(content => {
             content.classList.remove('active');
         });
 
-        // Remove active class from all tab buttons
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.classList.remove('active');
         });
 
-        // Show selected tab content
         const selectedTab = document.getElementById(tabName);
         if (selectedTab) {
             selectedTab.classList.add('active');
         }
 
-        // Add active class to corresponding button
         const selectedBtn = document.querySelector(`[data-tab="${tabName}"]`);
         if (selectedBtn) {
             selectedBtn.classList.add('active');
@@ -1199,10 +1354,12 @@ class SymptomTracker {
 
         this.currentTab = tabName;
 
-        // Update content based on tab
         if (tabName === 'history') {
             this.renderHistory();
             this.generatePatternInsights();
+        } else if (tabName === 'sleep') {
+            this.renderSleepHistory();
+            this.updateSleepQualityDisplay();
         }
     }
 }
@@ -1217,6 +1374,12 @@ function switchTab(tabName) {
 function saveSymptom() {
     if (window.symptomTracker) {
         window.symptomTracker.saveSymptom();
+    }
+}
+
+function saveSleep() {
+    if (window.symptomTracker) {
+        window.symptomTracker.saveSleep();
     }
 }
 
@@ -1262,15 +1425,26 @@ function quickLogSymptom() {
     }
 }
 
-// FIX 4: Real PDF Generation Function
 function downloadReportPDF() {
     if (window.symptomTracker) {
         window.symptomTracker.generatePDFReport();
     }
 }
 
+function exportSleepData() {
+    if (window.symptomTracker) {
+        window.symptomTracker.exportSleepData();
+    }
+}
+
+function exportLifeImpactData() {
+    if (window.symptomTracker) {
+        window.symptomTracker.exportLifeImpactData();
+    }
+}
+
 // Initialize the application when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
     window.symptomTracker = new SymptomTracker();
-    console.log('MedPrep Tracker with Complete Functionality loaded successfully!');
+    console.log('Enhanced MedPrep Tracker with Life Impact and Sleep Tracking loaded successfully!');
 });

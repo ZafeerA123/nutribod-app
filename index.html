@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MedPrep Tracker - Interactive Health Monitoring</title>
+    <title>MedPrep Tracker - Enhanced Health Monitoring</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -34,7 +34,7 @@
                 </div>
                 <div class="logo-text">
                     <h1>MedPrep Tracker</h1>
-                    <p>Smart symptom tracking for better healthcare</p>
+                    <p>Smart symptom tracking with life impact analysis</p>
                 </div>
             </div>
             <div class="disclaimer">
@@ -44,8 +44,7 @@
         </div>
     </header>
 
-
-    <!-- Authentication Section - ADD THIS -->
+    <!-- Authentication Section -->
     <div id="auth-container" class="auth-container">
         <div class="auth-card glass-card">
             <div class="auth-header">
@@ -55,7 +54,6 @@
             </div>
             
             <div class="auth-methods">
-                <!-- Google Sign-In (Primary) -->
                 <button class="auth-btn google-btn" onclick="signInWithGoogle()">
                     <svg viewBox="0 0 24 24" class="google-icon">
                         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -66,17 +64,13 @@
                     Continue with Google
                 </button>
                 
-                <!-- Email/Password Toggle -->
-                <div class="auth-divider">
-                    <span>or</span>
-                </div>
+                <div class="auth-divider"><span>or</span></div>
                 
                 <button class="auth-btn email-toggle-btn" onclick="toggleEmailAuth()">
                     <span class="auth-icon">📧</span>
                     Sign in with Email
                 </button>
                 
-                <!-- Email/Password Form (Hidden by default) -->
                 <div id="email-auth-form" class="email-auth-form" style="display: none;">
                     <div class="form-group">
                         <input type="email" id="auth-email" class="form-input" placeholder="Enter your email">
@@ -90,10 +84,7 @@
                     </div>
                 </div>
                 
-                <!-- Anonymous Option -->
-                <div class="auth-divider">
-                    <span>or</span>
-                </div>
+                <div class="auth-divider"><span>or</span></div>
                 
                 <button class="auth-btn anonymous-btn" onclick="signInAnonymously()">
                     <span class="auth-icon">👤</span>
@@ -107,7 +98,7 @@
         </div>
     </div>
 
-    <!-- User Profile Section (Shown when logged in) - ADD THIS -->
+    <!-- User Profile Section -->
     <div id="user-profile" class="user-profile" style="display: none;">
         <div class="profile-info">
             <img id="user-avatar" class="user-avatar" src="" alt="User">
@@ -119,13 +110,16 @@
         <button class="btn-secondary" onclick="signOut()">Sign Out</button>
     </div>
 
-
     <!-- Navigation with Modern Pills -->
     <nav class="nav-container">
         <div class="nav-tabs">
             <button class="tab-btn active" onclick="switchTab('tracker')" data-tab="tracker">
                 <span class="tab-icon">🎯</span>
                 <span>Body Map</span>
+            </button>
+            <button class="tab-btn" onclick="switchTab('sleep')" data-tab="sleep">
+                <span class="tab-icon">😴</span>
+                <span>Sleep</span>
             </button>
             <button class="tab-btn" onclick="switchTab('history')" data-tab="history">
                 <span class="tab-icon">📊</span>
@@ -154,17 +148,9 @@
                     </div>
                     
                     <div class="body-diagram" id="body-diagram">
-                        <!-- Replace the SVG section in your index.html with this more realistic body -->
                         <svg viewBox="0 0 400 700" class="body-svg">
-                            <!-- Head (more realistic shape) -->
-                            <path d="M 200 30 
-                                    C 230 30 250 50 250 80 
-                                    C 250 95 245 105 240 110
-                                    C 235 115 225 120 200 120
-                                    C 175 120 165 115 160 110
-                                    C 155 105 150 95 150 80
-                                    C 150 50 170 30 200 30 Z" 
-                                class="body-part hoverable" data-region="head" />
+                            <!-- Head -->
+                            <path d="M 200 30 C 230 30 250 50 250 80 C 250 95 245 105 240 110 C 235 115 225 120 200 120 C 175 120 165 115 160 110 C 155 105 150 95 150 80 C 150 50 170 30 200 30 Z" class="body-part hoverable" data-region="head" />
                             <text x="200" y="75" class="body-label">Head</text>
                             
                             <!-- Neck -->
@@ -195,26 +181,11 @@
                             <text x="135" y="305" class="body-label small">L.Hand</text>
                             <text x="265" y="305" class="body-label small">R.Hand</text>
                             
-                            <!-- Torso (realistic chest shape) -->
-                            <path d="M 170 140
-                                    C 170 140 170 150 175 155
-                                    L 175 180
-                                    C 175 190 180 200 185 205
-                                    L 215 205
-                                    C 220 200 225 190 225 180
-                                    L 225 155
-                                    C 230 150 230 140 230 140
-                                    C 235 145 240 150 240 160
-                                    L 240 200
-                                    C 240 210 235 220 225 225
-                                    L 175 225
-                                    C 165 220 160 210 160 200
-                                    L 160 160
-                                    C 160 150 165 145 170 140 Z" 
-                                class="body-part hoverable" data-region="chest" />
+                            <!-- Torso -->
+                            <path d="M 170 140 C 170 140 170 150 175 155 L 175 180 C 175 190 180 200 185 205 L 215 205 C 220 200 225 190 225 180 L 225 155 C 230 150 230 140 230 140 C 235 145 240 150 240 160 L 240 200 C 240 210 235 220 225 225 L 175 225 C 165 220 160 210 160 200 L 160 160 C 160 150 165 145 170 140 Z" class="body-part hoverable" data-region="chest" />
                             <text x="200" y="190" class="body-label">Chest</text>
                             
-                            <!-- Abdomen (realistic belly shape) -->
+                            <!-- Abdomen -->
                             <ellipse cx="200" cy="260" rx="60" ry="35" class="body-part hoverable" data-region="abdomen" />
                             <text x="200" y="265" class="body-label">Abdomen</text>
                             
@@ -222,16 +193,8 @@
                             <ellipse cx="200" cy="300" rx="50" ry="20" class="body-part hoverable" data-region="lower-back" />
                             <text x="200" y="305" class="body-label">Lower Back</text>
                             
-                            <!-- Pelvis/Hips -->
-                            <path d="M 160 320
-                                    C 155 325 155 335 160 340
-                                    L 180 345
-                                    L 220 345
-                                    C 240 345 245 335 245 325
-                                    C 245 320 240 320 235 322
-                                    L 165 322
-                                    C 160 320 160 320 160 320 Z"
-                                class="body-part hoverable" data-region="pelvis" />
+                            <!-- Pelvis -->
+                            <path d="M 160 320 C 155 325 155 335 160 340 L 180 345 L 220 345 C 240 345 245 335 245 325 C 245 320 240 320 235 322 L 165 322 C 160 320 160 320 160 320 Z" class="body-part hoverable" data-region="pelvis" />
                             <text x="200" y="335" class="body-label">Pelvis</text>
                             
                             <!-- Thighs -->
@@ -265,7 +228,7 @@
                     </div>
                 </div>
 
-                <!-- Enhanced Symptom Input Form -->
+                <!-- Enhanced Symptom Input Form with Life Impact -->
                 <div class="symptom-form-card">
                     <div id="symptom-form" class="symptom-form" style="display: none;">
                         <div class="form-header">
@@ -305,6 +268,141 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- NEW: Life Impact Assessment -->
+                            <div class="form-group life-impact-section">
+                                <label class="form-label">How did this symptom affect your daily life?</label>
+                                
+                                <div class="impact-category">
+                                    <h4>Work/School Impact</h4>
+                                    <div class="radio-group">
+                                        <label class="radio-option">
+                                            <input type="radio" name="work-impact" value="none">
+                                            <span class="radio-custom"></span>
+                                            No impact
+                                        </label>
+                                        <label class="radio-option">
+                                            <input type="radio" name="work-impact" value="mild">
+                                            <span class="radio-custom"></span>
+                                            Mild (slight distraction)
+                                        </label>
+                                        <label class="radio-option">
+                                            <input type="radio" name="work-impact" value="moderate">
+                                            <span class="radio-custom"></span>
+                                            Moderate (missed tasks/meetings)
+                                        </label>
+                                        <label class="radio-option">
+                                            <input type="radio" name="work-impact" value="severe">
+                                            <span class="radio-custom"></span>
+                                            Severe (couldn't work/study)
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="impact-category">
+                                    <h4>Sleep Impact</h4>
+                                    <div class="radio-group">
+                                        <label class="radio-option">
+                                            <input type="radio" name="sleep-impact" value="none">
+                                            <span class="radio-custom"></span>
+                                            No impact
+                                        </label>
+                                        <label class="radio-option">
+                                            <input type="radio" name="sleep-impact" value="mild">
+                                            <span class="radio-custom"></span>
+                                            Mild (slightly harder to sleep)
+                                        </label>
+                                        <label class="radio-option">
+                                            <input type="radio" name="sleep-impact" value="moderate">
+                                            <span class="radio-custom"></span>
+                                            Moderate (woke up multiple times)
+                                        </label>
+                                        <label class="radio-option">
+                                            <input type="radio" name="sleep-impact" value="severe">
+                                            <span class="radio-custom"></span>
+                                            Severe (couldn't sleep)
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="impact-category">
+                                    <h4>Social Impact</h4>
+                                    <div class="radio-group">
+                                        <label class="radio-option">
+                                            <input type="radio" name="social-impact" value="none">
+                                            <span class="radio-custom"></span>
+                                            No impact
+                                        </label>
+                                        <label class="radio-option">
+                                            <input type="radio" name="social-impact" value="mild">
+                                            <span class="radio-custom"></span>
+                                            Mild (less social)
+                                        </label>
+                                        <label class="radio-option">
+                                            <input type="radio" name="social-impact" value="moderate">
+                                            <span class="radio-custom"></span>
+                                            Moderate (avoided some activities)
+                                        </label>
+                                        <label class="radio-option">
+                                            <input type="radio" name="social-impact" value="severe">
+                                            <span class="radio-custom"></span>
+                                            Severe (cancelled plans/events)
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="impact-category">
+                                    <h4>Mobility Impact</h4>
+                                    <div class="radio-group">
+                                        <label class="radio-option">
+                                            <input type="radio" name="mobility-impact" value="none">
+                                            <span class="radio-custom"></span>
+                                            No impact
+                                        </label>
+                                        <label class="radio-option">
+                                            <input type="radio" name="mobility-impact" value="mild">
+                                            <span class="radio-custom"></span>
+                                            Mild (moved more slowly)
+                                        </label>
+                                        <label class="radio-option">
+                                            <input type="radio" name="mobility-impact" value="moderate">
+                                            <span class="radio-custom"></span>
+                                            Moderate (needed assistance)
+                                        </label>
+                                        <label class="radio-option">
+                                            <input type="radio" name="mobility-impact" value="severe">
+                                            <span class="radio-custom"></span>
+                                            Severe (couldn't move normally)
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="impact-category">
+                                    <h4>Mood Impact</h4>
+                                    <div class="radio-group">
+                                        <label class="radio-option">
+                                            <input type="radio" name="mood-impact" value="none">
+                                            <span class="radio-custom"></span>
+                                            No impact
+                                        </label>
+                                        <label class="radio-option">
+                                            <input type="radio" name="mood-impact" value="mild">
+                                            <span class="radio-custom"></span>
+                                            Mild (slightly irritated)
+                                        </label>
+                                        <label class="radio-option">
+                                            <input type="radio" name="mood-impact" value="moderate">
+                                            <span class="radio-custom"></span>
+                                            Moderate (frustrated/anxious)
+                                        </label>
+                                        <label class="radio-option">
+                                            <input type="radio" name="mood-impact" value="severe">
+                                            <span class="radio-custom"></span>
+                                            Severe (very distressed)
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
                             
                             <div class="form-group">
                                 <label class="form-label">When did it start?</label>
@@ -329,7 +427,7 @@
                     <div id="instruction-text" class="instruction-card">
                         <div class="instruction-icon">👆</div>
                         <h3>Get Started</h3>
-                        <p>Click on any body part to begin logging your symptoms</p>
+                        <p>Click on any body part to begin logging your symptoms with life impact analysis</p>
                         <div class="quick-stats">
                             <div class="stat">
                                 <span class="stat-number" id="total-symptoms">0</span>
@@ -345,25 +443,93 @@
             </div>
         </div>
 
+        <!-- NEW: Sleep Tracker Tab -->
+        <div id="sleep" class="tab-content">
+            <div class="section-header">
+                <h2>Sleep Tracking</h2>
+                <p>Monitor your sleep patterns and their connection to your symptoms</p>
+            </div>
+            
+            <div class="tracker-grid">
+                <div class="sleep-form-card glass-card">
+                    <div class="card-icon">😴</div>
+                    <h3>Log Sleep Session</h3>
+                    
+                    <div class="form-body">
+                        <div class="form-group">
+                            <label class="form-label">Bedtime</label>
+                            <input type="datetime-local" id="bedtime" class="form-input">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Wake Time</label>
+                            <input type="datetime-local" id="waketime" class="form-input">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Sleep Quality</label>
+                            <div class="severity-slider">
+                                <input type="range" id="sleep-quality" min="1" max="5" value="3" class="slider">
+                                <div class="severity-display">
+                                    <span class="severity-number" id="sleep-quality-display">3</span>
+                                    <span class="sleep-quality-label">Fair</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Sleep Notes</label>
+                            <textarea id="sleep-notes" class="form-textarea" placeholder="How did you feel? Any disruptions, dreams, or factors that affected your sleep?"></textarea>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button class="btn-primary" id="save-sleep-btn" onclick="saveSleep()">
+                                <span class="btn-icon">💾</span>
+                                Log Sleep
+                            </button>
+                            <button class="btn-secondary" onclick="exportSleepData()">
+                                <span class="btn-icon">📥</span>
+                                Export Data
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sleep-stats-card glass-card">
+                    <div class="card-icon">📊</div>
+                    <h3>Sleep Overview</h3>
+                    <div id="sleep-stats" class="quick-stats">
+                        <div class="stat">
+                            <span class="stat-number">0</span>
+                            <span class="stat-label">Sessions Logged</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-number">0h</span>
+                            <span class="stat-label">Avg Duration</span>
+                        </div>
+                    </div>
+                    
+                    <div class="sleep-timeline-container">
+                        <h4>Recent Sleep Sessions</h4>
+                        <div id="sleep-timeline" class="timeline">
+                            <p style="color: rgba(255,255,255,0.6); text-align: center; padding: 40px;">No sleep data logged yet. Start tracking your sleep patterns!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Enhanced History Tab -->
         <div id="history" class="tab-content">
             <div class="section-header">
-                <h2>Symptom History & Patterns</h2>
-                <p>Review your symptom timeline and identify patterns</p>
+                <h2>Health History & Impact Analysis</h2>
+                <p>Review your symptoms, life impact patterns, and health insights</p>
             </div>
             
             <div class="history-controls">
                 <div class="filter-group">
                     <select id="filter-region" class="form-input">
                         <option value="">All body regions</option>
-                        <option value="head">Head</option>
-                        <option value="neck">Neck</option>
-                        <option value="chest">Chest</option>
-                        <option value="abdomen">Abdomen</option>
-                        <option value="left-arm">Left Arm</option>
-                        <option value="right-arm">Right Arm</option>
-                        <option value="left-leg">Left Leg</option>
-                        <option value="right-leg">Right Leg</option>
                     </select>
                     <input type="date" id="filter-date" class="form-input" onchange="filterHistory()">
                     <button class="btn-secondary" onclick="filterHistory()">Filter</button>
@@ -372,7 +538,7 @@
             
             <div class="history-grid">
                 <div class="timeline-card">
-                    <h3>Recent Symptoms</h3>
+                    <h3>Recent Symptoms & Life Impact</h3>
                     <div id="symptom-timeline" class="timeline">
                         <!-- Timeline items will be populated here -->
                     </div>
@@ -432,6 +598,10 @@
                             <span class="question-icon">💡</span>
                             <span>What lifestyle changes might help?</span>
                         </div>
+                        <div class="suggested-question">
+                            <span class="question-icon">💡</span>
+                            <span>How are these symptoms affecting my daily life?</span>
+                        </div>
                     </div>
                     <div class="add-question">
                         <input type="text" id="custom-question" class="form-input" placeholder="Add your own question">
@@ -441,9 +611,9 @@
 
                 <div class="prep-card glass-card full-width">
                     <div class="card-icon">📋</div>
-                    <h3>Visit Summary</h3>
+                    <h3>Visit Summary & Life Impact Report</h3>
                     <div id="visit-summary" class="visit-summary">
-                        <p>Set up an appointment above to see your personalized visit summary</p>
+                        <p>Set up an appointment above to see your personalized visit summary with life impact analysis</p>
                     </div>
                     <button class="btn-primary" onclick="generateVisitSummary()">
                         <span class="btn-icon">✨</span>
@@ -456,8 +626,8 @@
         <!-- Reports Tab -->
         <div id="reports" class="tab-content">
             <div class="section-header">
-                <h2>Medical Reports</h2>
-                <p>Generate professional reports to share with your healthcare team</p>
+                <h2>Medical Reports & Data Export</h2>
+                <p>Generate professional reports and export your health data</p>
             </div>
             
             <div class="reports-grid">
@@ -485,17 +655,17 @@
                             <label class="checkbox-item">
                                 <input type="checkbox" checked>
                                 <span class="checkmark"></span>
-                                Severity trends
-                            </label>
-                            <label class="checkbox-item">
-                                <input type="checkbox">
-                                <span class="checkmark"></span>
-                                Potential patterns
+                                Life impact analysis
                             </label>
                             <label class="checkbox-item">
                                 <input type="checkbox" checked>
                                 <span class="checkmark"></span>
-                                Summary statistics
+                                Sleep correlations
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" checked>
+                                <span class="checkmark"></span>
+                                Pattern insights
                             </label>
                         </div>
                     </div>
@@ -503,6 +673,20 @@
                         <span class="btn-icon">📄</span>
                         Generate PDF Report
                     </button>
+                    
+                    <div class="export-section" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
+                        <h4 style="color: #c4b5fd; margin-bottom: 15px;">Export Data</h4>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button class="btn-secondary" onclick="exportLifeImpactData()">
+                                <span class="btn-icon">📥</span>
+                                Export Impact Data
+                            </button>
+                            <button class="btn-secondary" onclick="exportSleepData()">
+                                <span class="btn-icon">😴</span>
+                                Export Sleep Data
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="report-preview-card glass-card">
@@ -510,7 +694,7 @@
                     <div id="report-preview" class="report-preview">
                         <div class="preview-placeholder">
                             <div class="preview-icon">📋</div>
-                            <p>Generate a report to see preview</p>
+                            <p>Generate a report to see preview with life impact analysis</p>
                         </div>
                     </div>
                 </div>
@@ -538,189 +722,167 @@
 
     <script src="script.js"></script>
 
+    <!-- Firebase SDKs with Authentication -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy, onSnapshot, where } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInAnonymously, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 
+        const firebaseConfig = {
+          apiKey: "AIzaSyCTT85CYY2DA0E2Jvc7Wv7DI0Iu0WKGz9g",
+          authDomain: "medprep-tracker.firebaseapp.com",
+          projectId: "medprep-tracker",
+          storageBucket: "medprep-tracker.firebasestorage.app",
+          messagingSenderId: "816697486441",
+          appId: "1:816697486441:web:deac9378ebc4607c5c06f8",
+          measurementId: "G-W2F9SEPHFH"
+        };
 
-<!-- Firebase SDKs with Authentication -->
-<script type="module">
-    // Import Firebase
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-    import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy, onSnapshot, where } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-    import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInAnonymously, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const googleProvider = new GoogleAuthProvider();
 
-    // Your Firebase configuration
-    const firebaseConfig = {
-      apiKey: "AIzaSyCTT85CYY2DA0E2Jvc7Wv7DI0Iu0WKGz9g",
-      authDomain: "medprep-tracker.firebaseapp.com",
-      projectId: "medprep-tracker",
-      storageBucket: "medprep-tracker.firebasestorage.app",
-      messagingSenderId: "816697486441",
-      appId: "1:816697486441:web:deac9378ebc4607c5c06f8",
-      measurementId: "G-W2F9SEPHFH"
-    };
+        window.db = db;
+        window.auth = auth;
+        window.googleProvider = googleProvider;
+        window.firebaseOperations = {
+            collection, addDoc, getDocs, doc, updateDoc, deleteDoc,
+            query, orderBy, onSnapshot, where,
+            signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+            signInAnonymously, onAuthStateChanged,
+            signOut: () => signOut(auth)
+        };
 
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
-    const googleProvider = new GoogleAuthProvider();
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                console.log('User signed in:', user.email || 'Anonymous');
+                showMainApp(user);
+            } else {
+                console.log('User signed out');
+                showAuthScreen();
+            }
+        });
 
-    // Make Firebase available globally
-    window.db = db;
-    window.auth = auth;
-    window.googleProvider = googleProvider;
-    window.firebaseOperations = {
-        collection,
-        addDoc,
-        getDocs,
-        doc,
-        updateDoc,
-        deleteDoc,
-        query,
-        orderBy,
-        onSnapshot,
-        where,
-        signInWithPopup,
-        signInWithEmailAndPassword,
-        createUserWithEmailAndPassword,
-        signInAnonymously,
-        onAuthStateChanged,
-        signOut: () => signOut(auth)
-    };
-
-    // Authentication state observer
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            console.log('User signed in:', user.email || 'Anonymous');
-            showMainApp(user);
-        } else {
-            console.log('User signed out');
-            showAuthScreen();
+        function showMainApp(user) {
+            document.getElementById('auth-container').style.display = 'none';
+            document.querySelector('.container').style.display = 'block';
+            document.getElementById('user-profile').style.display = 'flex';
+            
+            const avatar = document.getElementById('user-avatar');
+            const name = document.getElementById('user-name');
+            const email = document.getElementById('user-email');
+            
+            if (user.isAnonymous) {
+                avatar.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="%23667eea"/><text x="50" y="60" text-anchor="middle" fill="white" font-size="30">?</text></svg>';
+                name.textContent = 'Demo User';
+                email.textContent = 'Using demo mode';
+            } else {
+                avatar.src = user.photoURL || 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="%23667eea"/><text x="50" y="60" text-anchor="middle" fill="white" font-size="30">' + (user.displayName ? user.displayName[0] : user.email[0]) + '</text></svg>';
+                name.textContent = user.displayName || user.email.split('@')[0];
+                email.textContent = user.email;
+            }
+            
+            if (window.symptomTracker) {
+                window.symptomTracker.currentUser = user;
+                window.symptomTracker.loadUserData();
+            } else {
+                setTimeout(() => {
+                    if (window.symptomTracker) {
+                        window.symptomTracker.currentUser = user;
+                        window.symptomTracker.loadUserData();
+                    }
+                }, 1000);
+            }
         }
-    });
 
-    function showMainApp(user) {
-        document.getElementById('auth-container').style.display = 'none';
-        document.querySelector('.container').style.display = 'block';
-        document.getElementById('user-profile').style.display = 'flex';
-        
-        // Update user profile display
-        const avatar = document.getElementById('user-avatar');
-        const name = document.getElementById('user-name');
-        const email = document.getElementById('user-email');
-        
-        if (user.isAnonymous) {
-            avatar.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="%23667eea"/><text x="50" y="60" text-anchor="middle" fill="white" font-size="30">?</text></svg>';
-            name.textContent = 'Demo User';
-            email.textContent = 'Using demo mode';
-        } else {
-            avatar.src = user.photoURL || 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="%23667eea"/><text x="50" y="60" text-anchor="middle" fill="white" font-size="30">' + (user.displayName ? user.displayName[0] : user.email[0]) + '</text></svg>';
-            name.textContent = user.displayName || user.email.split('@')[0];
-            email.textContent = user.email;
+        function showAuthScreen() {
+            document.getElementById('auth-container').style.display = 'flex';
+            document.querySelector('.container').style.display = 'none';
+            document.getElementById('user-profile').style.display = 'none';
         }
-        
-        // Initialize the symptom tracker with user context
-        if (window.symptomTracker) {
-            window.symptomTracker.currentUser = user;
-            window.symptomTracker.loadUserData();
-        } else {
-            // Wait for symptom tracker to initialize
-            setTimeout(() => {
-                if (window.symptomTracker) {
-                    window.symptomTracker.currentUser = user;
-                    window.symptomTracker.loadUserData();
-                }
-            }, 1000);
-        }
-    }
 
-    function showAuthScreen() {
-        document.getElementById('auth-container').style.display = 'flex';
-        document.querySelector('.container').style.display = 'none';
-        document.getElementById('user-profile').style.display = 'none';
-    }
+        window.signInWithGoogle = async function() {
+            try {
+                await signInWithPopup(auth, googleProvider);
+                console.log('Google sign-in successful');
+            } catch (error) {
+                console.error('Google sign-in error:', error);
+                alert('Sign-in failed: ' + error.message);
+            }
+        };
 
-    // Global authentication functions
-    window.signInWithGoogle = async function() {
-        try {
-            const result = await signInWithPopup(auth, googleProvider);
-            console.log('Google sign-in successful');
-        } catch (error) {
-            console.error('Google sign-in error:', error);
-            alert('Sign-in failed: ' + error.message);
-        }
-    };
+        window.signInWithEmail = async function() {
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+            
+            if (!email || !password) {
+                alert('Please enter both email and password');
+                return;
+            }
+            
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                console.log('Email sign-in successful');
+            } catch (error) {
+                console.error('Email sign-in error:', error);
+                alert('Sign-in failed: ' + error.message);
+            }
+        };
 
-    window.signInWithEmail = async function() {
-        const email = document.getElementById('auth-email').value;
-        const password = document.getElementById('auth-password').value;
-        
-        if (!email || !password) {
-            alert('Please enter both email and password');
-            return;
-        }
-        
-        try {
-            await signInWithEmailAndPassword(auth, email, password);
-            console.log('Email sign-in successful');
-        } catch (error) {
-            console.error('Email sign-in error:', error);
-            alert('Sign-in failed: ' + error.message);
-        }
-    };
+        window.signUpWithEmail = async function() {
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+            
+            if (!email || !password) {
+                alert('Please enter both email and password');
+                return;
+            }
+            
+            if (password.length < 6) {
+                alert('Password must be at least 6 characters');
+                return;
+            }
+            
+            try {
+                await createUserWithEmailAndPassword(auth, email, password);
+                console.log('Account created successfully');
+            } catch (error) {
+                console.error('Sign-up error:', error);
+                alert('Account creation failed: ' + error.message);
+            }
+        };
 
-    window.signUpWithEmail = async function() {
-        const email = document.getElementById('auth-email').value;
-        const password = document.getElementById('auth-password').value;
-        
-        if (!email || !password) {
-            alert('Please enter both email and password');
-            return;
-        }
-        
-        if (password.length < 6) {
-            alert('Password must be at least 6 characters');
-            return;
-        }
-        
-        try {
-            await createUserWithEmailAndPassword(auth, email, password);
-            console.log('Account created successfully');
-        } catch (error) {
-            console.error('Sign-up error:', error);
-            alert('Account creation failed: ' + error.message);
-        }
-    };
+        window.signInAnonymously = async function() {
+            try {
+                await signInAnonymously(auth);
+                console.log('Anonymous sign-in successful');
+            } catch (error) {
+                console.error('Anonymous sign-in error:', error);
+                alert('Demo mode failed: ' + error.message);
+            }
+        };
 
-    window.signInAnonymously = async function() {
-        try {
-            await signInAnonymously(auth);
-            console.log('Anonymous sign-in successful');
-        } catch (error) {
-            console.error('Anonymous sign-in error:', error);
-            alert('Demo mode failed: ' + error.message);
-        }
-    };
+        window.signOut = async function() {
+            try {
+                await signOut(auth);
+                console.log('User signed out');
+            } catch (error) {
+                console.error('Sign-out error:', error);
+            }
+        };
 
-    window.signOut = async function() {
-        try {
-            await signOut(auth);
-            console.log('User signed out');
-        } catch (error) {
-            console.error('Sign-out error:', error);
-        }
-    };
+        window.toggleEmailAuth = function() {
+            const form = document.getElementById('email-auth-form');
+            const isHidden = form.style.display === 'none';
+            form.style.display = isHidden ? 'block' : 'none';
+            
+            if (isHidden) {
+                document.getElementById('auth-email').focus();
+            }
+        };
 
-    window.toggleEmailAuth = function() {
-        const form = document.getElementById('email-auth-form');
-        const isHidden = form.style.display === 'none';
-        form.style.display = isHidden ? 'block' : 'none';
-        
-        if (isHidden) {
-            document.getElementById('auth-email').focus();
-        }
-    };
-
-    console.log('Firebase Authentication initialized');
-</script>
+        console.log('Firebase Authentication initialized');
+    </script>
 </body>
 </html>
