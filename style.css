@@ -482,20 +482,15 @@ body {
     transition: var(--transition);
 }
 
-.form-input:focus, .form-textarea:focus {
-    outline: none;
-    border-color: #667eea;
-    background: rgba(255, 255, 255, 0.08);
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+/* Specific styling for select dropdown */
+select.form-input {
+    color: #000000;
+    background: rgba(255, 255, 255, 0.9);
 }
 
-.form-textarea {
-    min-height: 80px;
-    resize: vertical;
-}
-
-.form-input::placeholder, .form-textarea::placeholder {
-    color: rgba(255, 255, 255, 0.4);
+select.form-input option {
+    color: #000000;
+    background: #ffffff;
 }
 
 /* NEW: Life Impact Section Styles */
