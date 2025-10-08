@@ -15,8 +15,10 @@ A comprehensive health symptom tracking application designed to help patients do
 - [Important Limitations](#important-limitations)
 - [Privacy and Security](#privacy-and-security)
 - [Medical Disclaimer](#medical-disclaimer)
-- [Contributing](#contributing)
 - [License](#license)
+- [Third-Party Licenses](#third-party-licenses)
+- [Legal Disclaimer](#legal-disclaimer)
+- [Contributing](#contributing)
 - [Support](#support)
 
 ## Features
@@ -247,6 +249,9 @@ Navigate to `http://localhost:8000` in your browser.
 - Account deletion removes all associated data
 - Export functionality allows data portability
 
+### Not HIPAA Compliant
+**IMPORTANT:** This application is NOT HIPAA compliant in its current form. Healthcare providers should not use this application to store patient data subject to HIPAA regulations. This application is intended for personal use only.
+
 ## Medical Disclaimer
 
 **CRITICAL: MedPrep Tracker is a documentation and organization tool only.**
@@ -267,6 +272,77 @@ This application IS:
 
 Always consult with qualified healthcare professionals for medical advice, diagnosis, and treatment. Do not use this application to self-diagnose or delay seeking professional medical care.
 
+For complete medical and legal disclaimers, please read the [DISCLAIMER.md](DISCLAIMER.md) file.
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for complete details.
+
+```
+MIT License
+
+Copyright (c) 2025 [Your Name or Organization]
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+## Third-Party Licenses
+
+This project uses the following third-party libraries and services:
+
+### Firebase SDK (v10.7.1)
+- **License:** Apache License 2.0
+- **Copyright:** Google LLC
+- **Used for:** Authentication, Firestore Database, Cloud Storage
+
+### jsPDF (v2.5.1)
+- **License:** MIT License
+- **Copyright:** James Hall and contributors
+- **Used for:** PDF report generation
+
+For complete third-party license information and attributions, see [THIRD-PARTY-LICENSES.md](THIRD-PARTY-LICENSES.md).
+
+## Legal Disclaimer
+
+By using MedPrep Tracker, you acknowledge and agree to the following:
+
+1. This software is provided "AS IS" without warranty of any kind
+2. The developers are not liable for any health outcomes or decisions
+3. You use this application at your own risk
+4. You will seek professional medical advice for all health concerns
+5. This application is not HIPAA compliant and should not be used by healthcare providers for patient data
+
+For the complete legal disclaimer including liability limitations, privacy considerations, and terms of use, please read the [DISCLAIMER.md](DISCLAIMER.md) file.
+
+## Project Structure
+
+```
+medprep-tracker/
+├── LICENSE                       # MIT License
+├── DISCLAIMER.md                 # Medical and legal disclaimer
+├── THIRD-PARTY-LICENSES.md      # Third-party library attributions
+├── README.md                     # This file
+├── index.html                    # Main application file
+├── script.js                     # Application logic
+└── style.css                     # Glassmorphism styles
+```
+
 ## Contributing
 
 Contributions are welcome and appreciated. To contribute:
@@ -282,10 +358,41 @@ Contributions are welcome and appreciated. To contribute:
 - Test all functionality before submitting PR
 - Update documentation for new features
 - Ensure responsive design compatibility
+- Do not make medical claims in code or documentation
+- Maintain HIPAA non-compliance notices if applicable
 
-## License
+### Code of Conduct
+- Be respectful and professional
+- Focus on constructive feedback
+- Remember this is a health-related application affecting real people
+- Prioritize user safety and clear disclaimers
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for complete details.
+## Roadmap
+
+Potential future enhancements:
+- Medication tracking
+- Symptom trend graphs and visualizations
+- Export to multiple formats (JSON, XML)
+- Offline functionality with local storage
+- Multi-language support
+- Accessibility improvements (WCAG 2.1 compliance)
+- Mobile app versions (iOS/Android)
+
+**Note:** Any new features must maintain clear medical disclaimers and avoid diagnostic functionality.
+
+## Known Issues
+
+- PDF generation may timeout with large numbers of photos
+- Base64 photo storage increases Firestore costs with high usage
+- No offline support - requires internet connection
+- Photos cannot be edited after upload (must delete and re-add)
+- 17-photo limit is hardcoded (not configurable without code changes)
+
+For bug reports, please open an issue on GitHub with:
+- Browser and version
+- Steps to reproduce
+- Expected vs actual behavior
+- Screenshots if applicable
 
 ## Support
 
@@ -295,15 +402,45 @@ For issues, questions, or feature requests:
 - **Email:** nutribod135@gmail.com
 - **Documentation:** See inline code comments and this README
 
-### Reporting Bugs
-When reporting bugs, please include:
-- Browser and version
-- Steps to reproduce the issue
-- Expected vs. actual behavior
-- Screenshots if applicable
+### Before Requesting Support
+
+1. Read the [DISCLAIMER.md](DISCLAIMER.md) - many questions are answered there
+2. Check existing GitHub issues for similar problems
+3. Verify your Firebase configuration is correct
+4. Test in incognito/private mode to rule out browser extensions
+
+### Reporting Security Issues
+
+If you discover a security vulnerability:
+- **DO NOT** open a public GitHub issue
+- Email: your-email@example.com with details
+- Use subject line: "Security: MedPrep Tracker"
+- Allow reasonable time for response before public disclosure
+
+## Acknowledgments
+
+- Firebase team for excellent backend services
+- jsPDF contributors for PDF generation capabilities
+- The open source community for inspiration and best practices
+- Healthcare professionals who provided feedback on usability
+
+## Disclaimer Summary
+
+**REMEMBER:** This application:
+- Is NOT a medical device
+- Is NOT FDA approved
+- Is NOT HIPAA compliant
+- Should NOT be used for diagnosis
+- Should NOT replace professional medical care
+
+**For medical emergencies, call 911 immediately.**
 
 ---
 
 **MedPrep Tracker - Professional Health Documentation for Better Patient Care**
 
 *This application assists in tracking and communicating symptoms. Always consult healthcare professionals for medical advice, diagnosis, and treatment.*
+
+**Last Updated:** January 2025  
+**Version:** 1.0.0  
+**License:** MIT
