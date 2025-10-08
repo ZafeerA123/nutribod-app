@@ -1,21 +1,136 @@
-MIT License
+MedPrep Tracker Custom License
 
-Copyright (c) 2025 [Zafeer Ahmed - Nutribod]
+Copyright (c) 2025 Zafeer Ahmed
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+TERMS AND CONDITIONS
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+1. DEFINITIONS
+   - "Software" refers to MedPrep Tracker and all associated code, documentation, and assets.
+   - "Modification" means any change to the Software's code, features, or functionality.
+   - "Substantial Modification" means meaningful changes that demonstrate significant original work.
+   - "Commercial Use" means any use intended for or resulting in commercial advantage or monetary compensation.
+   - "You" refers to any individual or entity using this Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+2. PROHIBITED USES
+   You MAY NOT:
+   - Use, distribute, or deploy the Software in its original, unmodified form
+   - Sell, license, or commercialize verbatim copies of the Software
+   - Remove or alter copyright notices or this license
+   - Claim the original Software as your own work
+
+3. PERMITTED NON-COMMERCIAL USE
+   For non-commercial purposes, You MAY:
+   - Modify the Software for personal use
+   - Modify the Software for educational purposes
+   - Modify the Software for non-profit organizations
+   - Distribute modified versions for free
+   
+   PROVIDED THAT:
+   - You include clear attribution: "Based on MedPrep Tracker by Zafeer Ahmed"
+   - You include this license with your distribution
+   - Your modifications are clearly documented
+   - You do not charge any fees for the modified Software
+
+4. COMMERCIAL USE REQUIREMENTS
+   For commercial purposes, You MAY:
+   - Create and sell substantially modified versions of the Software
+   
+   PROVIDED THAT:
+   - You have made substantial modifications to the Software
+   - You contact the copyright holder at nutribod135@gmail.com before commercial launch
+   - You agree to pay a revenue share of 15% of gross revenue from the modified Software
+   - Payment terms will be negotiated in good faith
+   - You include prominent attribution: "Based on MedPrep Tracker by Zafeer Ahmed"
+   - You maintain this license requirement for derivative works
+   
+   "Substantial modifications" include but are not limited to:
+   - New features or functionality not present in the original
+   - Significant changes to user interface or user experience
+   - Integration with other systems or services
+   - Changes representing at least 30% of the original codebase
+   
+   Superficial changes (colors, logos, branding only) do NOT qualify as substantial modifications.
+
+5. ATTRIBUTION REQUIREMENTS
+   All uses of modified Software must include:
+   - "Based on MedPrep Tracker"
+   - "Original Copyright (c) 2025 Zafeer Ahmed"
+   - Link to original project (if distributed digitally)
+   - This attribution must be visible in:
+     * Application footer or about section
+     * Documentation or README
+     * LICENSE file
+
+6. REVENUE SHARING FOR COMMERCIAL USE
+   Commercial use of modified Software requires:
+   - Initial contact with copyright holder before launch
+   - Quarterly revenue reports
+   - Payment of agreed revenue share percentage
+   - Good faith negotiation of terms
+   - Written agreement memorializing the arrangement
+   
+   Suggested revenue share: 5-10% of gross revenue
+   (Exact percentage negotiable based on extent of modifications)
+
+7. GRANT OF RIGHTS
+   Subject to compliance with these terms, You are granted:
+   - Right to view and study the source code
+   - Right to modify the Software for permitted uses
+   - Right to create derivative works under these same terms
+   - Right to distribute modified versions under this license
+
+8. NO WARRANTY
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+
+9. LIMITATION OF LIABILITY
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+   DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+   OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+   USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+10. TERMINATION
+    Your rights under this license automatically terminate if You:
+    - Violate any terms of this license
+    - Fail to provide required attribution
+    - Use unmodified Software commercially
+    - Fail to pay agreed revenue share for commercial use
+    
+    Upon termination, You must cease all use and distribution of the Software.
+
+11. ENFORCEMENT
+    The copyright holder reserves the right to:
+    - Request proof of modifications for commercial claims
+    - Audit revenue reports for commercial users
+    - Pursue legal action for license violations
+    - Revoke commercial use rights for non-compliance
+
+12. CONTACT FOR COMMERCIAL USE
+    To discuss commercial use and revenue sharing:
+    Email: nutribod135@gmail.com
+    Subject: "MedPrep Tracker Commercial License Inquiry"
+    
+    Include:
+    - Description of your modifications
+    - Intended use case
+    - Expected revenue model
+    - Proposed revenue share percentage
+
+13. GOVERNING LAW
+    This license is governed by the laws of California, USA.
+    Any disputes shall be resolved in the courts of San Diego County.
+
+---
+
+SUMMARY (Not legally binding - see full terms above):
+
+✓ Personal/Educational Use: Modify freely, credit required, no payment needed
+✓ Non-Profit Use: Modify and distribute free versions with attribution
+✓ Commercial Use: Modify substantially, contact owner, negotiate revenue share
+✗ Verbatim Use: Cannot use or distribute unmodified Software
+✗ Superficial Modifications: Cannot sell with only cosmetic changes
+
+For questions: nutribod135@gmail.com
+
+Last Updated: January 2025
