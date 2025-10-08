@@ -4,7 +4,7 @@ A comprehensive health symptom tracking application designed to help patients do
 
 ![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
 ![Firebase](https://img.shields.io/badge/Firebase-10.7.1-orange.svg)
-![License](https://img.shields.io/badge/license-MIT-green.svg)
+![License](https://img.shields.io/badge/license-Custom-red.svg)
 
 ## Table of Contents
 
@@ -16,6 +16,7 @@ A comprehensive health symptom tracking application designed to help patients do
 - [Privacy and Security](#privacy-and-security)
 - [Medical Disclaimer](#medical-disclaimer)
 - [License](#license)
+- [Commercial Use](#commercial-use)
 - [Third-Party Licenses](#third-party-licenses)
 - [Legal Disclaimer](#legal-disclaimer)
 - [Support](#support)
@@ -209,9 +210,57 @@ For complete medical and legal disclaimers, please read the [DISCLAIMER.md](DISC
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for complete details.
+This project is licensed under a **Custom License** with specific terms for use, modification, and commercial distribution.
 
-Copyright (c) 2025 [Your Name or Organization]. All rights reserved.
+**Copyright (c) 2025 Zafeer Ahmed. All rights reserved.**
+
+### License Summary
+
+**You MAY:**
+- ✓ Use the application at the provided URL for personal health tracking
+- ✓ Modify the code for personal, educational, or non-profit use (with attribution)
+- ✓ Create substantially modified versions for commercial use (with revenue sharing)
+
+**You MAY NOT:**
+- ✗ Use or distribute the original, unmodified software
+- ✗ Sell or commercialize superficial modifications (branding/colors only)
+- ✗ Use commercially without contacting the copyright holder
+- ✗ Remove copyright notices or attribution
+
+**Key Requirements:**
+1. **Attribution Required:** All modified versions must credit "Based on MedPrep Tracker by [Your Name]"
+2. **No Verbatim Use:** Original unmodified software cannot be used or distributed
+3. **Commercial Use:** Requires substantial modifications AND revenue sharing agreement
+4. **Non-Commercial Use:** Free for personal, educational, and non-profit use with attribution
+
+### Full License Terms
+
+See the complete [LICENSE](LICENSE) file for detailed terms and conditions.
+
+## Commercial Use
+
+### Interested in Commercial Use?
+
+If you want to create a commercial product based on MedPrep Tracker:
+
+**Requirements:**
+1. Make substantial modifications to the software (not just branding changes)
+2. Contact the copyright holder before launch
+3. Negotiate revenue sharing agreement (typically 5-10% of gross revenue)
+4. Maintain attribution to the original project
+5. Comply with all license terms
+
+**Contact for Commercial Licensing:**
+- Email: nutribod135@gmail.com
+- Subject: "MedPrep Tracker Commercial License Inquiry"
+
+**Include in your inquiry:**
+- Description of your planned modifications
+- Intended use case and target market
+- Expected revenue model
+- Proposed revenue share percentage
+
+**We're open to fair negotiations that benefit both parties while respecting the original work.**
 
 ## Third-Party Licenses
 
@@ -238,6 +287,7 @@ By using MedPrep Tracker, you acknowledge and agree to the following:
 3. You use this application at your own risk
 4. You will seek professional medical advice for all health concerns
 5. This application is not HIPAA compliant and should not be used by healthcare providers for patient data
+6. You agree to comply with the custom license terms for any use or modification
 
 For the complete legal disclaimer including liability limitations, privacy considerations, and terms of use, please read the [DISCLAIMER.md](DISCLAIMER.md) file.
 
@@ -247,6 +297,20 @@ For issues, questions, or feature requests:
 
 - **Email:** nutribod135@gmail.com
 - **Report Issues:** Describe your problem including browser type and steps to reproduce
+
+### Reporting Issues
+
+When reporting issues, include:
+- Browser and version
+- Steps to reproduce the problem
+- Expected vs actual behavior
+- Screenshots if helpful
+
+### Commercial License Inquiries
+
+For commercial use discussions:
+- Email: nutribod135@gmail.com
+- Subject: "MedPrep Tracker Commercial License Inquiry"
 
 ## Disclaimer Summary
 
@@ -265,6 +329,7 @@ For issues, questions, or feature requests:
 
 *This application assists in tracking and communicating symptoms. Always consult healthcare professionals for medical advice, diagnosis, and treatment.*
 
+**Copyright (c) 2025 Zafeer Ahmed**  
+**Licensed under Custom License - See LICENSE file**  
 **Last Updated:** January 2025  
-**Version:** 1.0.0  
-**License:** MIT
+**Version:** 1.0.0
