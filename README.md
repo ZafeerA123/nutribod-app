@@ -10,7 +10,7 @@ A comprehensive health symptom tracking application designed to help patients do
 
 - [Features](#features)
 - [Tech Stack](#tech-stack)
-- [Installation](#installation)
+- [Getting Started](#getting-started)
 - [Usage Guide](#usage-guide)
 - [Important Limitations](#important-limitations)
 - [Privacy and Security](#privacy-and-security)
@@ -18,7 +18,6 @@ A comprehensive health symptom tracking application designed to help patients do
 - [License](#license)
 - [Third-Party Licenses](#third-party-licenses)
 - [Legal Disclaimer](#legal-disclaimer)
-- [Contributing](#contributing)
 - [Support](#support)
 
 ## Features
@@ -76,87 +75,21 @@ Track how symptoms affect daily life across five key categories:
 - **PDF Export:** jsPDF 2.5.1
 - **Design:** Modern glassmorphism with gradient animations and micro-interactions
 
-## Installation
+## Getting Started
 
-### Prerequisites
+### Access the Application
+
+Visit the live application at: **[your-deployed-url.com]**
+
+No installation required - simply:
+1. Open the URL in your web browser
+2. Sign in using Google, Email, or try Anonymous demo mode
+3. Start tracking your symptoms immediately
+
+### System Requirements
 - Modern web browser (Chrome, Firefox, Safari, or Edge)
-- Firebase account for production deployment
-- Basic understanding of Firebase console for configuration
-
-### Local Development Setup
-
-#### Step 1: Clone the Repository
-```bash
-git clone https://github.com/yourusername/medprep-tracker.git
-cd medprep-tracker
-```
-
-#### Step 2: Configure Firebase
-
-1. Create a Firebase project at [console.firebase.google.com](https://console.firebase.google.com)
-2. Enable Firestore Database in your Firebase project
-3. Enable Authentication methods:
-   - Google Sign-In
-   - Email/Password
-   - Anonymous
-4. Copy your Firebase configuration credentials
-
-#### Step 3: Update Firebase Configuration
-
-In the `index.html` file, locate the Firebase configuration section and replace with your credentials:
-
-```javascript
-const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_ID",
-  appId: "YOUR_APP_ID",
-  measurementId: "YOUR_MEASUREMENT_ID"
-};
-```
-
-#### Step 4: Configure Firestore Security Rules
-
-In the Firebase Console, set up the following Firestore security rules:
-
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /symptoms/{symptomId} {
-      allow read, write: if request.auth != null && 
-                        request.resource.data.userId == request.auth.uid;
-    }
-    match /appointments/{appointmentId} {
-      allow read, write: if request.auth != null && 
-                        request.resource.data.userId == request.auth.uid;
-    }
-    match /sleep/{sleepId} {
-      allow read, write: if request.auth != null && 
-                        request.resource.data.userId == request.auth.uid;
-    }
-  }
-}
-```
-
-#### Step 5: Launch the Application
-
-Open `index.html` directly in your browser, or use a local development server:
-
-```bash
-# Using Python 3
-python -m http.server 8000
-
-# Using Node.js
-npx serve
-
-# Using PHP
-php -S localhost:8000
-```
-
-Navigate to `http://localhost:8000` in your browser.
+- Internet connection
+- JavaScript enabled
 
 ## Usage Guide
 
@@ -278,29 +211,7 @@ For complete medical and legal disclaimers, please read the [DISCLAIMER.md](DISC
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for complete details.
 
-```
-MIT License
-
-Copyright (c) 2025 [Zafeer Ahmed]
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
+Copyright (c) 2025 [Your Name or Organization]. All rights reserved.
 
 ## Third-Party Licenses
 
@@ -330,99 +241,12 @@ By using MedPrep Tracker, you acknowledge and agree to the following:
 
 For the complete legal disclaimer including liability limitations, privacy considerations, and terms of use, please read the [DISCLAIMER.md](DISCLAIMER.md) file.
 
-## Project Structure
-
-```
-medprep-tracker/
-├── LICENSE                       # MIT License
-├── DISCLAIMER.md                 # Medical and legal disclaimer
-├── THIRD-PARTY-LICENSES.md      # Third-party library attributions
-├── README.md                     # This file
-├── index.html                    # Main application file
-├── script.js                     # Application logic
-└── style.css                     # Glassmorphism styles
-```
-
-## Contributing
-
-Contributions are welcome and appreciated. To contribute:
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/YourFeatureName`
-3. Commit your changes: `git commit -m 'Add detailed description of feature'`
-4. Push to the branch: `git push origin feature/YourFeatureName`
-5. Open a Pull Request with a comprehensive description
-
-### Development Guidelines
-- Follow existing code style and conventions
-- Test all functionality before submitting PR
-- Update documentation for new features
-- Ensure responsive design compatibility
-- Do not make medical claims in code or documentation
-- Maintain HIPAA non-compliance notices if applicable
-
-### Code of Conduct
-- Be respectful and professional
-- Focus on constructive feedback
-- Remember this is a health-related application affecting real people
-- Prioritize user safety and clear disclaimers
-
-## Roadmap
-
-Potential future enhancements:
-- Medication tracking
-- Symptom trend graphs and visualizations
-- Export to multiple formats (JSON, XML)
-- Offline functionality with local storage
-- Multi-language support
-- Accessibility improvements (WCAG 2.1 compliance)
-- Mobile app versions (iOS/Android)
-
-**Note:** Any new features must maintain clear medical disclaimers and avoid diagnostic functionality.
-
-## Known Issues
-
-- PDF generation may timeout with large numbers of photos
-- Base64 photo storage increases Firestore costs with high usage
-- No offline support - requires internet connection
-- Photos cannot be edited after upload (must delete and re-add)
-- 17-photo limit is hardcoded (not configurable without code changes)
-
-For bug reports, please open an issue on GitHub with:
-- Browser and version
-- Steps to reproduce
-- Expected vs actual behavior
-- Screenshots if applicable
-
 ## Support
 
 For issues, questions, or feature requests:
 
-- **GitHub Issues:** Open an issue in the repository
 - **Email:** nutribod135@gmail.com
-- **Documentation:** See inline code comments and this README
-
-### Before Requesting Support
-
-1. Read the [DISCLAIMER.md](DISCLAIMER.md) - many questions are answered there
-2. Check existing GitHub issues for similar problems
-3. Verify your Firebase configuration is correct
-4. Test in incognito/private mode to rule out browser extensions
-
-### Reporting Security Issues
-
-If you discover a security vulnerability:
-- **DO NOT** open a public GitHub issue
-- Email: nutribod135@gmail.com with details
-- Use subject line: "Security: MedPrep Tracker"
-- Allow reasonable time for response before public disclosure
-
-## Acknowledgments
-
-- Firebase team for excellent backend services
-- jsPDF contributors for PDF generation capabilities
-- The open source community for inspiration and best practices
-- Healthcare professionals who provided feedback on usability
+- **Report Issues:** Describe your problem including browser type and steps to reproduce
 
 ## Disclaimer Summary
 
