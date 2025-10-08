@@ -92,7 +92,7 @@ Users retain all rights to data they enter into the application, including:
 - Personal health information
 
 ### Application License
-The application code is licensed under the MIT License (see LICENSE file).
+The application code is licensed under a Custom License (see LICENSE file).
 
 ## Modifications and Updates
 
@@ -139,7 +139,7 @@ By using MedPrep Tracker, you acknowledge that:
 
 If you have questions about this disclaimer:
 - Contact: nutribod135@gmail.com
-- Review: MIT License in LICENSE file
+- Review: Custom License in LICENSE file
 - Review: Third-party licenses in THIRD-PARTY-LICENSES.md
 
 ---
