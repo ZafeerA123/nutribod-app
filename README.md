@@ -281,7 +281,7 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 ```
 MIT License
 
-Copyright (c) 2025 [Your Name or Organization]
+Copyright (c) 2025 [Zafeer Ahmed]
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -413,7 +413,7 @@ For issues, questions, or feature requests:
 
 If you discover a security vulnerability:
 - **DO NOT** open a public GitHub issue
-- Email: your-email@example.com with details
+- Email: nutribod135@gmail.com with details
 - Use subject line: "Security: MedPrep Tracker"
 - Allow reasonable time for response before public disclosure
 
