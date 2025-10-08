@@ -79,7 +79,7 @@ Track how symptoms affect daily life across five key categories:
 
 ### Access the Application
 
-Visit the live application at: **[your-deployed-url.com]**
+Visit the live application at: https://zafeera123.github.io/nutribod-app/
 
 No installation required - simply:
 1. Open the URL in your web browser
