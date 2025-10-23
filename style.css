@@ -1553,9 +1553,8 @@ select.form-input option {
     color: white;
 }
 
-/* ==================== MEDICATION TAB STYLES ==================== */
+/* ==================== MEDICATION SECTION STYLES ==================== */
 
-/* Medications Grid Layout */
 .medications-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -1563,81 +1562,54 @@ select.form-input option {
     margin-top: 20px;
 }
 
-/* Individual Medication Card */
 .medication-card {
-    background: var(--glass-bg);
-    backdrop-filter: blur(20px);
-    border: 1px solid var(--glass-border);
-    border-radius: var(--border-radius);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
     padding: 20px;
-    box-shadow: var(--shadow-glass);
-    transition: var(--transition);
-    position: relative;
-    overflow: hidden;
+    transition: all 0.3s ease;
 }
 
 .medication-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    border-color: rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(102, 126, 234, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
 }
 
-/* Medication Card Header */
-.medication-card-header {
+.medication-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
     margin-bottom: 15px;
-    padding-bottom: 15px;
+    padding-bottom: 10px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.medication-name {
-    font-size: 1.3rem;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin-bottom: 5px;
+.medication-header h4 {
+    color: #c4b5fd;
+    font-size: 1.2rem;
+    margin: 0;
 }
 
 .medication-dosage {
-    font-size: 1rem;
-    color: var(--text-secondary);
-    font-weight: 500;
-}
-
-/* Medication Details */
-.medication-details {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-bottom: 15px;
-}
-
-.medication-detail-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 5px 12px;
+    border-radius: 20px;
     font-size: 0.9rem;
-    color: var(--text-secondary);
+    font-weight: 600;
 }
 
-.medication-detail-icon {
-    font-size: 1.1rem;
-    min-width: 20px;
+.medication-info {
+    margin: 15px 0;
 }
 
-.medication-notes {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 8px;
-    padding: 10px;
-    margin-top: 10px;
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-    font-style: italic;
-    border-left: 3px solid rgba(102, 126, 234, 0.5);
+.medication-info p {
+    margin: 8px 0;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.95rem;
 }
 
-/* Medication Card Actions */
 .medication-actions {
     display: flex;
     gap: 10px;
@@ -1648,119 +1620,15 @@ select.form-input option {
 
 .med-action-btn {
     flex: 1;
-    padding: 8px 12px;
+    padding: 10px 15px;
     border: none;
     border-radius: 8px;
-    font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
-    transition: var(--transition);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
 }
 
-.med-email-btn {
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-    color: white;
-}
-
-.med-email-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
-}
-
-.med-delete-btn {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    color: white;
-}
-
-.med-delete-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(240, 147, 251, 0.4);
-}
-
-/* Email Status Badge */
-.email-status-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 5px 10px;
-    border-radius: 12px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    margin-top: 10px;
-}
-
-.email-status-badge.sent {
-    background: rgba(16, 185, 129, 0.2);
-    color: #10b981;
-    border: 1px solid rgba(16, 185, 129, 0.3);
-}
-
-.email-status-badge.not-sent {
-    background: rgba(156, 163, 175, 0.2);
-    color: #9ca3af;
-    border: 1px solid rgba(156, 163, 175, 0.3);
-}
-
-/* Empty State Styling */
-.medications-grid p {
-    grid-column: 1 / -1;
-}
-
-/* Form Row for Side-by-Side Fields */
-.form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    margin-bottom: 20px;
-}
-
-/* Responsive Design for Medications */
-@media (max-width: 768px) {
-    .medications-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .form-row {
-        grid-template-columns: 1fr;
-        gap: 15px;
-    }
-    
-    .medication-actions {
-        flex-direction: column;
-    }
-    
-    .med-action-btn {
-        width: 100%;
-    }
-}
-
-/* Loading Spinner for Email Sending */
-.email-sending {
-    opacity: 0.6;
-    pointer-events: none;
-    position: relative;
-}
-
-.email-sending::after {
-    content: '⏳';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 1.5rem;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    from { transform: translate(-50%, -50%) rotate(0deg); }
-    to { transform: translate(-50%, -50%) rotate(360deg); }
-}
-
-/* Notification Toggle Button Styles */
 .med-notify-btn {
     background: rgba(156, 163, 175, 0.2);
     color: #9ca3af;
@@ -1782,7 +1650,35 @@ select.form-input option {
     box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
 }
 
+.med-delete-btn {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+}
+
+.med-delete-btn:hover {
+    background: rgba(239, 68, 68, 0.3);
+    color: #fca5a5;
+    transform: translateY(-2px);
+}
+
 @keyframes pulse {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.8; }
+}
+
+/* Form Row for Medication Form */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+@media (max-width: 768px) {
+    .medications-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
 }

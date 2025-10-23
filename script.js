@@ -5,14 +5,14 @@ class SymptomTracker {
         this.appointments = [];
         this.sleepEntries = [];
         this.medications = [];
+        this.medicationReminders = {};
         this.selectedRegion = null;
         this.currentTab = 'tracker';
         this.currentUser = null;
         this.PHOTO_LIMIT = 17;
         this.WARNING_THRESHOLD = 15;
         this.init();
-        this.notificationPermission = Notification.permission;
-        this.medicationReminders = {}; // Store active reminder intervals
+        this.notificationPermission = ('Notification' in window) ? Notification.permission : 'denied';
     }
 
     init() {
@@ -280,13 +280,11 @@ class SymptomTracker {
 
             // Check photo limit after loading data
             this.updatePhotoLimitStatus();
-
+            this.loadMedicationsFromStorage();
         } catch (error) {
             console.error('Error loading user data:', error);
             this.showToast('Error loading your data', 'error');
         }
-        this.loadMedicationsFromStorage();  
-        this.updateAppointmentSummary();
     }
 
     selectBodyPart(region) {
@@ -1535,25 +1533,6 @@ class SymptomTracker {
                     </ul>
                 </div>
             </div>
-
-            <div style="background: rgba(255,255,255,0.05); padding: 25px; border-radius: 12px; margin-bottom: 20px;">
-                <h4 style="color: #c4b5fd; margin-bottom: 15px; font-size: 1.1rem;">
-                    💊 Current Medications
-                </h4>
-                ${this.medications && this.medications.length > 0 ? `
-                    <div style="display: flex; flex-direction: column; gap: 10px;">
-                        ${this.medications.map(med => `
-                            <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; border-left: 3px solid #667eea;">
-                                <strong style="color: #c4b5fd; font-size: 1em;">${med.name}</strong> - ${med.dosage}<br>
-                                <span style="color: rgba(255,255,255,0.7); font-size: 0.9em;">
-                                    🔄 ${med.frequency} | 📅 Started: ${new Date(med.startDate).toLocaleDateString()}
-                                </span>
-                                ${med.notes ? `<br><span style="color: rgba(255,255,255,0.6); font-size: 0.85em; font-style: italic;">📝 ${med.notes}</span>` : ''}
-                            </div>
-                        `).join('')}
-                    </div>
-                ` : '<p style="color: rgba(255,255,255,0.6);">No medications currently tracked</p>'}
-            </div>
             
             <button class="btn-primary" onclick="window.symptomTracker.downloadMedicalReport()" style="width: 100%;">
                 <span class="btn-icon">📥</span>
@@ -1758,6 +1737,7 @@ class SymptomTracker {
                 
                 yPosition += 8;
             });
+            yPosition += 10;
         }
 
         // Disclaimer
@@ -1774,61 +1754,43 @@ class SymptomTracker {
     downloadTextReport() {
         const timeframe = document.getElementById('report-timeframe')?.value || '1month';
         const reportData = this.getReportData(timeframe);
-
-        // Add medications to text report
-        content += `
-    CURRENT MEDICATIONS
-    ===================
-    `;
-            if (this.medications && this.medications.length > 0) {
-                this.medications.forEach((med, index) => {
-                    content += `
-    ${index + 1}. ${med.name} - ${med.dosage}
-    Frequency: ${med.frequency}
-    Started: ${new Date(med.startDate).toLocaleDateString()}
-    ${med.notes ? `Notes: ${med.notes}` : ''}
-    `;
-                });
-            } else {
-                content += 'No medications currently tracked\n';
-            }
         
         let content = `MEDICAL SYMPTOM REPORT
-        Generated: ${new Date().toLocaleString()}
-        Time Period: ${this.getTimeframeLabel(timeframe)}
-        Patient: ${this.currentUser?.email || 'Demo User'}
+Generated: ${new Date().toLocaleString()}
+Time Period: ${this.getTimeframeLabel(timeframe)}
+Patient: ${this.currentUser?.email || 'Demo User'}
 
-        SUMMARY STATISTICS
-        ==================
-        Total Symptoms: ${reportData.totalCount}
-        Average Severity: ${reportData.avgSeverity}/10
-        Severity Range: ${reportData.minSeverity}/10 - ${reportData.maxSeverity}/10
+SUMMARY STATISTICS
+==================
+Total Symptoms: ${reportData.totalCount}
+Average Severity: ${reportData.avgSeverity}/10
+Severity Range: ${reportData.minSeverity}/10 - ${reportData.maxSeverity}/10
 
-        DETAILED SYMPTOM LOG
-        ===================
-        `;
+DETAILED SYMPTOM LOG
+===================
+`;
 
-                reportData.symptoms
-                    .sort((a, b) => new Date(b.datetime) - new Date(a.datetime))
-                    .slice(0, 10)
-                    .forEach((symptom, index) => {
-                        content += `
-        ${index + 1}. ${new Date(symptom.datetime).toLocaleString()}
-        Location: ${symptom.region.replace('-', ' ')}
-        Type: ${symptom.type}
-        Severity: ${symptom.severity}/10
-        Description: ${symptom.description}
-        ${symptom.notes ? `Notes: ${symptom.notes}` : ''}
-        ${symptom.photoBase64 ? '[Photo included in PDF version]' : ''}
-        `;
-                    });
-
+        reportData.symptoms
+            .sort((a, b) => new Date(b.datetime) - new Date(a.datetime))
+            .slice(0, 10)
+            .forEach((symptom, index) => {
                 content += `
-        ==================
-        This report contains ${reportData.totalCount} total symptoms.
-        For complete data with photos, use PDF export.
+${index + 1}. ${new Date(symptom.datetime).toLocaleString()}
+Location: ${symptom.region.replace('-', ' ')}
+Type: ${symptom.type}
+Severity: ${symptom.severity}/10
+Description: ${symptom.description}
+${symptom.notes ? `Notes: ${symptom.notes}` : ''}
+${symptom.photoBase64 ? '[Photo included in PDF version]' : ''}
+`;
+            });
 
-        Generated by MedPrep Tracker`;
+        content += `
+==================
+This report contains ${reportData.totalCount} total symptoms.
+For complete data with photos, use PDF export.
+
+Generated by MedPrep Tracker`;
 
         const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
         const url = window.URL.createObjectURL(blob);
@@ -1998,6 +1960,7 @@ class SymptomTracker {
             });
 
             this.showToast('Symptom logged successfully!');
+            showSymptomNotification(symptom.type, symptom.region); // ADD THIS LINE
             this.clearForm();
             this.updateStats();
             this.renderHistory();
@@ -2127,131 +2090,27 @@ class SymptomTracker {
             this.showLoadingOverlay(false);
         }
     }
-    updateAppointmentSummary() {
-        const summarySymptoms = document.getElementById('summary-symptoms');
-        const summaryRegions = document.getElementById('summary-regions');
-        const summaryObservations = document.getElementById('summary-observations');
-        const summaryMedications = document.getElementById('summary-medications');
-        
-        // Update medications summary
-        if (summaryMedications) {
-            if (this.medications && this.medications.length > 0) {
-                summaryMedications.innerHTML = this.medications
-                    .map(med => `
-                        <div style="padding: 8px; margin-bottom: 8px; background: rgba(255,255,255,0.05); border-radius: 6px; border-left: 2px solid #667eea;">
-                            <strong style="color: #c4b5fd;">${med.name}</strong> - ${med.dosage}<br>
-                            <small style="color: rgba(255,255,255,0.7);">🔄 ${med.frequency}</small>
-                        </div>
-                    `).join('');
-            } else {
-                summaryMedications.innerHTML = '<p style="color: rgba(255,255,255,0.6); font-size: 0.9em;">No medications tracked</p>';
-            }
-        }
-        
-        // Keep existing summary updates if they exist
-        if (this.symptoms.length > 0) {
-            const recent = this.symptoms.slice(0, 5);
-            if (summarySymptoms) {
-                summarySymptoms.innerHTML = recent.map(s => `
-                    <div style="padding: 6px; margin-bottom: 6px; background: rgba(255,255,255,0.03); border-radius: 4px;">
-                        <strong>${s.type}</strong> - ${s.region.replace('-', ' ')}
-                        <br><small style="color: rgba(255,255,255,0.6);">${new Date(s.datetime).toLocaleDateString()}</small>
-                    </div>
-                `).join('');
-            }
-        }
-    }
-    // ==================== BROWSER NOTIFICATIONS ====================
-    
-    async requestNotificationPermission() {
-        if (!('Notification' in window)) {
-            this.showToast('Browser notifications not supported', 'error');
-            return false;
-        }
-        
-        if (Notification.permission === 'granted') {
-            return true;
-        }
-        
-        if (Notification.permission !== 'denied') {
-            const permission = await Notification.requestPermission();
-            this.notificationPermission = permission;
-            if (permission === 'granted') {
-                this.showToast('Notifications enabled! ✅', 'success');
-                return true;
-            }
-        }
-        
-        this.showToast('Please enable notifications in your browser settings', 'error');
-        return false;
-    }
-    
-    showNotification(title, body) {
-        if (Notification.permission === 'granted') {
-            new Notification(title, {
-                body: body,
-                icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="75" font-size="75">💊</text></svg>',
-                badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="75" font-size="75">💊</text></svg>',
-                tag: 'medication-reminder',
-                requireInteraction: true
+    // ==================== MEDICATION MANAGEMENT ====================
+
+    loadMedicationsFromStorage() {
+        const saved = localStorage.getItem(`medications_${this.currentUser?.uid || 'demo'}`);
+        if (saved) {
+            this.medications = JSON.parse(saved);
+            this.renderMedications();
+            // Restart notifications for enabled medications
+            this.medications.forEach(med => {
+                if (med.notificationsEnabled) {
+                    this.setupMedicationReminder(med);
+                }
             });
         }
     }
-    
-    setupMedicationReminder(medication) {
-        // Clear existing reminder for this medication
-        if (this.medicationReminders[medication.id]) {
-            clearInterval(this.medicationReminders[medication.id]);
-        }
-        
-        // Parse frequency to get interval in milliseconds
-        const intervalMs = this.getFrequencyInterval(medication.frequency);
-        
-        if (!intervalMs) {
-            console.log('Cannot set up automatic reminders for frequency:', medication.frequency);
-            return;
-        }
-        
-        // Show initial notification
-        this.showNotification(
-            `💊 Medication Reminder`,
-            `Time to take ${medication.name} (${medication.dosage})`
-        );
-        
-        // Set up recurring reminders
-        const intervalId = setInterval(() => {
-            this.showNotification(
-                `💊 Medication Reminder`,
-                `Time to take ${medication.name} (${medication.dosage})`
-            );
-        }, intervalMs);
-        
-        this.medicationReminders[medication.id] = intervalId;
-        console.log(`Reminder set for ${medication.name} every ${intervalMs}ms`);
+
+    saveMedicationsToStorage() {
+        localStorage.setItem(`medications_${this.currentUser?.uid || 'demo'}`, 
+                            JSON.stringify(this.medications));
     }
-    
-    getFrequencyInterval(frequency) {
-        const intervals = {
-            'Every 4 hours': 4 * 60 * 60 * 1000,
-            'Every 6 hours': 6 * 60 * 60 * 1000,
-            'Every 8 hours': 8 * 60 * 60 * 1000,
-            'Once daily': 24 * 60 * 60 * 1000,
-            'Twice daily': 12 * 60 * 60 * 1000,
-            'Three times daily': 8 * 60 * 60 * 1000,
-            'Four times daily': 6 * 60 * 60 * 1000
-        };
-        
-        return intervals[frequency] || null;
-    }
-    
-    clearMedicationReminder(medicationId) {
-        if (this.medicationReminders[medicationId]) {
-            clearInterval(this.medicationReminders[medicationId]);
-            delete this.medicationReminders[medicationId];
-        }
-    }
-    // ==================== MEDICATION MANAGEMENT ====================
-    
+
     addMedication(medicationData) {
         const medication = {
             id: Date.now(),
@@ -2275,168 +2134,100 @@ class SymptomTracker {
         
         return medication;
     }
-    
-    deleteMedication(medicationId) {
-        this.clearMedicationReminder(medicationId); // ADD THIS LINE
 
-        if (confirm('Are you sure you want to delete this medication?')) {
-            this.medications = this.medications.filter(med => med.id !== medicationId);
-            this.saveMedicationsToStorage();
-            this.updateAppointmentSummary();
-            this.renderMedications();
-            this.showToast('Medication deleted successfully', 'success');
+    deleteMedication(medicationId) {
+        this.clearMedicationReminder(medicationId);
+        this.medications = this.medications.filter(med => med.id !== medicationId);
+        this.saveMedicationsToStorage();
+        this.renderMedications();
+        this.showToast('Medication deleted', 'success');
+    }
+
+    setupMedicationReminder(medication) {
+        if (Notification.permission !== 'granted') return;
+        
+        // Clear existing reminder
+        if (this.medicationReminders[medication.id]) {
+            clearInterval(this.medicationReminders[medication.id]);
+        }
+        
+        const intervalMs = this.getFrequencyInterval(medication.frequency);
+        if (!intervalMs) return;
+        
+        // Show initial notification
+        new Notification('💊 Medication Reminder', {
+            body: `Time to take ${medication.name} (${medication.dosage})`,
+            requireInteraction: true
+        });
+        
+        // Set up recurring reminders
+        const intervalId = setInterval(() => {
+            new Notification('💊 Medication Reminder', {
+                body: `Time to take ${medication.name} (${medication.dosage})`,
+                requireInteraction: true
+            });
+        }, intervalMs);
+        
+        this.medicationReminders[medication.id] = intervalId;
+    }
+
+    getFrequencyInterval(frequency) {
+        const intervals = {
+            'Every 4 hours': 4 * 60 * 60 * 1000,
+            'Every 6 hours': 6 * 60 * 60 * 1000,
+            'Every 8 hours': 8 * 60 * 60 * 1000,
+            'Once daily': 24 * 60 * 60 * 1000,
+            'Twice daily': 12 * 60 * 60 * 1000,
+            'Three times daily': 8 * 60 * 60 * 1000,
+            'Four times daily': 6 * 60 * 60 * 1000
+        };
+        return intervals[frequency] || null;
+    }
+
+    clearMedicationReminder(medicationId) {
+        if (this.medicationReminders[medicationId]) {
+            clearInterval(this.medicationReminders[medicationId]);
+            delete this.medicationReminders[medicationId];
         }
     }
-    
-    
+
     renderMedications() {
-        const listContainer = document.getElementById('medications-list');
-        if (!listContainer) return;
-        
+        const container = document.getElementById('medications-list');
+        if (!container) return;
+
         if (this.medications.length === 0) {
-            listContainer.innerHTML = `
+            container.innerHTML = `
                 <p style="text-align: center; color: var(--text-secondary); padding: 20px;">
                     No medications added yet. Add your first medication above!
                 </p>
             `;
             return;
         }
-        
-        listContainer.innerHTML = this.medications
-            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-            .map(med => `
-                <div class="medication-card" data-med-id="${med.id}">
-                    <div class="medication-card-header">
-                        <div>
-                            <div class="medication-name"> ${med.name}</div>
-                            <div class="medication-dosage">${med.dosage}</div>
-                        </div>
-                    </div>
-                    
-                    <div class="medication-details">
-                        <div class="medication-detail-item">
-                            <span class="medication-detail-icon">🔄</span>
-                            <span>${med.frequency}</span>
-                        </div>
-                        <div class="medication-detail-item">
-                            <span class="medication-detail-icon">📅</span>
-                            <span>Started: ${new Date(med.startDate).toLocaleDateString()}</span>
-                        </div>
-                        ${med.recipientEmail ? `
-                        <div class="medication-detail-item">
-                            <span class="medication-detail-icon">📧</span>
-                            <span>${med.recipientEmail}</span>
-                        </div>
-                        ` : ''}
-                    </div>
-                    
-                    ${med.notes ? `
-                    <div class="medication-notes">
-                        📝 ${med.notes}
-                    </div>
-                    ` : ''}
-                    
-                    ${med.emailSent ? `
-                    <div class="email-status-badge sent">
-                        ✓ Email Sent ${med.lastEmailSent ? new Date(med.lastEmailSent).toLocaleDateString() : ''}
-                    </div>
-                    ` : med.recipientEmail ? `
-                    <div class="email-status-badge not-sent">
-                        ⚠️ Email Not Sent Yet
-                    </div>
-                    ` : ''}
-                    
-                    <div class="medication-actions">
-                        <button class="med-action-btn ${med.notificationsEnabled ? 'med-notify-active' : 'med-notify-btn'}" 
-                                onclick="toggleMedicationNotifications(${med.id})">
-                            ${med.notificationsEnabled ? '🔔 Notifications ON' : '🔕 Enable Notifications'}
-                        </button>
-                        <button class="med-action-btn med-delete-btn" onclick="deleteMedicationById(${med.id})">
-                            🗑️ Delete
-                        </button>
-                    </div>
+
+        container.innerHTML = this.medications.map(med => `
+            <div class="medication-card">
+                <div class="medication-header">
+                    <h4>${med.name}</h4>
+                    <span class="medication-dosage">${med.dosage}</span>
                 </div>
-            `).join('');
-    }
-    
-    saveMedicationsToStorage() {
-        if (this.currentUser) {
-            const userMedKey = `medications_${this.currentUser.uid}`;
-            localStorage.setItem(userMedKey, JSON.stringify(this.medications));
-        }
-    }
-    
-    loadMedicationsFromStorage() {
-        if (this.currentUser) {
-            const userMedKey = `medications_${this.currentUser.uid}`;
-            const stored = localStorage.getItem(userMedKey);
-            if (stored) {
-                this.medications = JSON.parse(stored);
-                this.renderMedications();
-            }
-        }
-    }
-    async emailSummaryReport() {
-        const recipientEmail = document.getElementById('email-report-recipient')?.value;
-        
-        if (!recipientEmail) {
-            this.showToast('Please enter an email address', 'error');
-            return;
-        }
-        
-        if (this.symptoms.length === 0 && this.medications.length === 0) {
-            this.showToast('No data to send in report', 'error');
-            return;
-        }
-        
-        this.showLoadingOverlay(true);
-        
-        try {
-            // Generate report data
-            const timeframe = document.getElementById('report-timeframe')?.value || '1month';
-            const reportData = this.getReportData(timeframe);
-            
-            // Prepare email content
-            const symptomsText = reportData.symptoms.slice(0, 10).map(s => 
-                `• ${new Date(s.datetime).toLocaleDateString()}: ${s.type} in ${s.region.replace('-', ' ')} (Severity: ${s.severity}/10)`
-            ).join('\n');
-            
-            const medicationsText = this.medications.map(m => 
-                `• ${m.name} - ${m.dosage}, ${m.frequency}`
-            ).join('\n');
-            
-            const templateParams = {
-                to_email: recipientEmail,
-                user_name: this.currentUser?.displayName || this.currentUser?.email?.split('@')[0] || 'User',
-                report_period: this.getTimeframeLabel(timeframe),
-                total_symptoms: reportData.totalCount,
-                avg_severity: reportData.avgSeverity,
-                symptoms_summary: symptomsText || 'No symptoms in this period',
-                medications_list: medicationsText || 'No medications tracked',
-                generated_date: new Date().toLocaleDateString()
-            };
-            
-            console.log('Sending email report with params:', templateParams);
-            
-            const response = await emailjs.send(
-                'service_MED_APP',
-                'template_MedPrep',
-                templateParams
-            );
-            
-            console.log('Email sent successfully!', response);
-            this.showToast('Summary report emailed successfully! 📧', 'success');
-            document.getElementById('email-report-recipient').value = '';
-            
-        } catch (error) {
-            console.error('Email sending failed:', error);
-            this.showToast('Failed to send email: ' + error.text, 'error');
-        } finally {
-            this.showLoadingOverlay(false);
-        }
+                <div class="medication-info">
+                    <p><strong>📅 Frequency:</strong> ${med.frequency}</p>
+                    <p><strong>🗓️ Started:</strong> ${new Date(med.startDate).toLocaleDateString()}</p>
+                    ${med.notes ? `<p><strong>📝 Notes:</strong> ${med.notes}</p>` : ''}
+                </div>
+                <div class="medication-actions">
+                    <button class="med-action-btn ${med.notificationsEnabled ? 'med-notify-active' : 'med-notify-btn'}" 
+                            onclick="toggleMedicationNotifications(${med.id})">
+                        ${med.notificationsEnabled ? '🔔 ON' : '🔕 OFF'}
+                    </button>
+                    <button class="med-action-btn med-delete-btn" onclick="deleteMedication(${med.id})">
+                        🗑️ Delete
+                    </button>
+                </div>
+            </div>
+        `).join('');
     }
 }
-
 
 // Global functions for HTML onclick handlers
 function switchTab(tabName) {
@@ -2594,17 +2385,128 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
+// ==================== BROWSER NOTIFICATIONS ====================
 
-// ==================== MEDICATION GLOBAL FUNCTIONS ====================
-function addMedication(event) {
-    event.preventDefault();
+async function requestNotificationPermission() {
+    if (!('Notification' in window)) {
+        alert('Browser notifications not supported in this browser');
+        return false;
+    }
     
+    if (Notification.permission === 'granted') {
+        return true;
+    }
+    
+    if (Notification.permission !== 'denied') {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+            showTestNotification();
+            return true;
+        }
+    }
+    
+    return false;
+}
+
+function showTestNotification() {
+    if (Notification.permission === 'granted') {
+        new Notification('MedPrep Tracker', {
+            body: 'Notifications enabled! You\'ll receive symptom reminders.',
+            icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="75" font-size="75">✅</text></svg>'
+        });
+    }
+}
+
+function showSymptomNotification(symptomType, region) {
+    if (Notification.permission === 'granted') {
+        new Notification('Symptom Logged', {
+            body: `${symptomType} in ${region} has been recorded`,
+            icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="75" font-size="75">💊</text></svg>',
+            requireInteraction: false
+        });
+    }
+}
+
+// ==================== EMAIL REPORT FUNCTION ====================
+async function emailReport() {
     if (!window.symptomTracker) {
         console.error('Symptom tracker not initialized');
         return;
     }
     
-    const notificationsEnabled = document.getElementById('enable-notifications')?.checked || false;
+    const recipientEmail = document.getElementById('email-report-recipient')?.value;
+    
+    if (!recipientEmail) {
+        window.symptomTracker.showToast('Please enter an email address', 'error');
+        return;
+    }
+    
+    if (window.symptomTracker.symptoms.length === 0) {
+        window.symptomTracker.showToast('No symptoms to report', 'error');
+        return;
+    }
+    
+    window.symptomTracker.showLoadingOverlay(true);
+    
+    try {
+        // Get report data
+        const timeframe = document.getElementById('report-timeframe')?.value || '1month';
+        const reportData = window.symptomTracker.getReportData(timeframe);
+        
+        // Format symptoms for email
+        const symptomsText = reportData.symptoms.slice(0, 10).map(s => 
+            `• ${new Date(s.datetime).toLocaleDateString()}: ${s.type} in ${s.region.replace('-', ' ')} (Severity: ${s.severity}/10)`
+        ).join('\n');
+        
+        // Prepare email data
+        // Format medications for email
+        const medicationsText = window.symptomTracker.medications && window.symptomTracker.medications.length > 0
+            ? window.symptomTracker.medications.map(m => 
+                `• ${m.name} - ${m.dosage}, ${m.frequency}`
+              ).join('\n')
+            : 'No medications tracked';
+        
+        const templateParams = {
+            to_email: recipientEmail,
+            user_name: window.symptomTracker.currentUser?.displayName || 
+                      window.symptomTracker.currentUser?.email?.split('@')[0] || 'User',
+            report_period: window.symptomTracker.getTimeframeLabel ? 
+                          window.symptomTracker.getTimeframeLabel(timeframe) : 'Selected period',
+            total_symptoms: reportData.totalCount,
+            avg_severity: reportData.avgSeverity,
+            symptoms_summary: symptomsText || 'No symptoms in this period',
+            medications_list: medicationsText,
+            generated_date: new Date().toLocaleDateString()
+        };
+        
+        console.log('Sending email report...');
+        
+        const response = await emailjs.send(
+            'service_MED_APP',
+            'template_MedPrep',
+            templateParams
+        );
+        
+        console.log('Email sent successfully!', response);
+        window.symptomTracker.showToast('Summary report emailed successfully! 📧', 'success');
+        document.getElementById('email-report-recipient').value = '';
+        
+    } catch (error) {
+        console.error('Email sending failed:', error);
+        window.symptomTracker.showToast('Failed to send email: ' + (error.text || error.message), 'error');
+    } finally {
+        window.symptomTracker.showLoadingOverlay(false);
+    }
+}
+
+// ==================== MEDICATION GLOBAL FUNCTIONS ====================
+
+function addMedication(event) {
+    event.preventDefault();
+    
+    if (!window.symptomTracker) return;
+    
+    const notificationsEnabled = document.getElementById('enable-med-notifications')?.checked || false;
     
     const medicationData = {
         name: document.getElementById('med-name').value.trim(),
@@ -2615,26 +2517,22 @@ function addMedication(event) {
         notificationsEnabled: notificationsEnabled
     };
     
-    // Validation
     if (!medicationData.name || !medicationData.dosage || !medicationData.frequency || !medicationData.startDate) {
         window.symptomTracker.showToast('Please fill in all required fields', 'error');
         return;
     }
     
-    // Request notification permission if checkbox is checked
-    if (notificationsEnabled) {
-        window.symptomTracker.requestNotificationPermission().then(granted => {
+    if (notificationsEnabled && Notification.permission !== 'granted') {
+        requestNotificationPermission().then(granted => {
             if (granted) {
-                const medication = window.symptomTracker.addMedication(medicationData);
+                window.symptomTracker.addMedication(medicationData);
                 window.symptomTracker.showToast('Medication added with notifications! 💊🔔', 'success');
-                resetMedicationForm();
             } else {
-                // Still add medication but without notifications
                 medicationData.notificationsEnabled = false;
                 window.symptomTracker.addMedication(medicationData);
                 window.symptomTracker.showToast('Medication added (notifications disabled)', 'success');
-                resetMedicationForm();
             }
+            resetMedicationForm();
         });
     } else {
         window.symptomTracker.addMedication(medicationData);
@@ -2643,64 +2541,44 @@ function addMedication(event) {
     }
 }
 
-function deleteMedicationById(medicationId) {
-    if (window.symptomTracker) {
+function deleteMedication(medicationId) {
+    if (window.symptomTracker && confirm('Are you sure you want to delete this medication?')) {
         window.symptomTracker.deleteMedication(medicationId);
+    }
+}
+
+function toggleMedicationNotifications(medicationId) {
+    if (!window.symptomTracker) return;
+    
+    const medication = window.symptomTracker.medications.find(m => m.id === medicationId);
+    if (!medication) return;
+    
+    if (medication.notificationsEnabled) {
+        // Turn OFF
+        window.symptomTracker.clearMedicationReminder(medicationId);
+        medication.notificationsEnabled = false;
+        window.symptomTracker.saveMedicationsToStorage();
+        window.symptomTracker.renderMedications();
+        window.symptomTracker.showToast('Notifications disabled', 'success');
+    } else {
+        // Turn ON
+        requestNotificationPermission().then(granted => {
+            if (granted) {
+                medication.notificationsEnabled = true;
+                window.symptomTracker.setupMedicationReminder(medication);
+                window.symptomTracker.saveMedicationsToStorage();
+                window.symptomTracker.renderMedications();
+                window.symptomTracker.showToast('Notifications enabled! 🔔', 'success');
+            }
+        });
     }
 }
 
 function resetMedicationForm() {
     document.getElementById('medication-form').reset();
-    // Set today's date as default
     const startDateInput = document.getElementById('med-start-date');
     if (startDateInput) {
         startDateInput.value = new Date().toISOString().split('T')[0];
     }
-    // Uncheck the notification checkbox
-    const notifyCheckbox = document.getElementById('enable-notifications');
-    if (notifyCheckbox) {
-        notifyCheckbox.checked = false;
-    }
-}
-
-function toggleMedicationNotifications(medicationId) {
-    if (window.symptomTracker) {
-        const medication = window.symptomTracker.medications.find(m => m.id === medicationId);
-        if (!medication) return;
-        
-        if (medication.notificationsEnabled) {
-            // Turn OFF notifications
-            window.symptomTracker.clearMedicationReminder(medicationId);
-            medication.notificationsEnabled = false;
-            window.symptomTracker.saveMedicationsToStorage();
-            window.symptomTracker.renderMedications();
-            window.symptomTracker.showToast('Notifications disabled for this medication', 'success');
-        } else {
-            // Turn ON notifications
-            window.symptomTracker.requestNotificationPermission().then(granted => {
-                if (granted) {
-                    medication.notificationsEnabled = true;
-                    window.symptomTracker.setupMedicationReminder(medication);
-                    window.symptomTracker.saveMedicationsToStorage();
-                    window.symptomTracker.renderMedications();
-                    window.symptomTracker.showToast('Notifications enabled! 🔔', 'success');
-                }
-            });
-        }
-    }
-}
-
-function emailSummaryReport() {
-    if (window.symptomTracker) {
-        window.symptomTracker.emailSummaryReport();
-    }
-}
-
-function addMedication(event) {
-    event.preventDefault();
-    
-    if (!window.symptomTracker) {
-        console.error('Symptom tracker not initialized');
-        return;
-    }
+    document.getElementById('enable-med-notifications').checked = false;
 }
