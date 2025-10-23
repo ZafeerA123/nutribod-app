@@ -167,16 +167,13 @@
                 <span class="tab-icon"></span>
                 <span>History</span>
             </button>
-            <button class="tab-btn" onclick="switchTab('appointment')" data-tab="appointment">
-                <span class="tab-icon"></span>
-                <span>Appointment</span>
             </button>
             <button class="tab-btn" onclick="switchTab('reports')" data-tab="reports">
                 <span class="tab-icon"></span>
                 <span>Reports</span>
             </button>
             <button class="tab-btn" onclick="switchTab('medications')" data-tab="medications">
-                <span class="tab-icon">💊</span>
+                <span class="tab-icon"></span>
                 <span>Medications</span>
             </button>
         </div>
@@ -626,75 +623,6 @@
             </div>
         </div>
 
-        <!-- Appointment Prep Tab -->
-        <div id="appointment" class="tab-content">
-            <div class="section-header">
-                <h2>Prepare for Your Doctor Visit</h2>
-                <p>Organize your symptoms and questions for a productive appointment</p>
-            </div>
-            
-            <div class="appointment-grid">
-                <div class="prep-card glass-card">
-                    <div class="card-icon">📅</div>
-                    <h3>Upcoming Appointment</h3>
-                    <div class="form-group">
-                        <label class="form-label">Doctor/Clinic</label>
-                        <input type="text" id="doctor-name" class="form-input" placeholder="Dr. Smith, Internal Medicine">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Appointment Date</label>
-                        <input type="datetime-local" id="appointment-date" class="form-input">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Main Concern</label>
-                        <textarea id="visit-reason" class="form-textarea" placeholder="What's the primary reason for this visit?"></textarea>
-                    </div>
-                    <button class="btn-primary" onclick="saveAppointment()">
-                        <span class="btn-icon">💾</span>
-                        Save Appointment
-                    </button>
-                </div>
-
-                <div class="prep-card glass-card">
-                    <div class="card-icon">❓</div>
-                    <h3>Questions for Doctor</h3>
-                    <div id="suggested-questions" class="questions-list">
-                        <div class="suggested-question">
-                            <span class="question-icon">💡</span>
-                            <span>What could be causing these symptoms?</span>
-                        </div>
-                        <div class="suggested-question">
-                            <span class="question-icon">💡</span>
-                            <span>Are there any tests I should consider?</span>
-                        </div>
-                        <div class="suggested-question">
-                            <span class="question-icon">💡</span>
-                            <span>What lifestyle changes might help?</span>
-                        </div>
-                        <div class="suggested-question">
-                            <span class="question-icon">💡</span>
-                            <span>How are these symptoms affecting my daily life?</span>
-                        </div>
-                    </div>
-                    <div class="add-question">
-                        <input type="text" id="custom-question" class="form-input" placeholder="Add your own question">
-                        <button class="btn-secondary" onclick="addQuestion()">Add</button>
-                    </div>
-                </div>
-
-                <div class="prep-card glass-card full-width">
-                    <div class="card-icon"></div>
-                    <h3>Visit Summary & Life Impact Report</h3>
-                    <div id="visit-summary" class="visit-summary">
-                        <p>Set up an appointment above to see your personalized visit summary with life impact analysis</p>
-                    </div>
-                    <button class="btn-primary" onclick="generateVisitSummary()">
-                        <span class="btn-icon">✨</span>
-                        Generate Visit Summary
-                    </button>
-                </div>
-            </div>
-        </div>
 
         <!-- Reports Tab -->
         <div id="reports" class="tab-content">
@@ -763,7 +691,7 @@
     <!-- Medications Tab -->
         <div id="medications" class="tab-content">
             <div class="section-header">
-                <h2>💊 Medication Tracker</h2>
+                <h2>Medication Tracker</h2>
                 <p>Track your medications, dosages, and schedules with smart reminders</p>
             </div>
 
@@ -826,7 +754,7 @@
 
                     <div class="form-actions">
                         <button type="submit" class="btn-primary">
-                            💊 Add Medication
+                            Add Medication
                         </button>
                         <button type="button" class="btn-secondary" onclick="resetMedicationForm()">
                             Clear Form
