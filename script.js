@@ -2582,3 +2582,91 @@ function resetMedicationForm() {
     }
     document.getElementById('enable-med-notifications').checked = false;
 }
+
+// ===== EMAILJS HELPERS =====
+async function sendMedicationEmail(med, user) {
+    // Guard: make sure EmailJS is ready
+    if (!window.emailjs || !window.EMAILJS) {
+        console.error('EmailJS not initialized or config missing');
+        window.symptomTracker?.showToast('Email service not ready', 'error');
+        return;
+    }
+
+    const SERVICE_ID = window.EMAILJS.SERVICE_ID;
+    const TEMPLATE_ID = window.EMAILJS.TEMPLATE_ID;
+
+    // Figure out recipient + name from Firebase Auth
+    const userEmail = user?.email || document.getElementById('email-report-recipient')?.value || '';
+    const userName  = user?.displayName || (userEmail ? userEmail.split('@')[0] : 'MedPrep User');
+
+    // Build template params to match your EmailJS template variables
+    const templateParams = {
+        user_name: userName,
+        user_email: userEmail,                // or "to_email" if your template uses that
+        medication_name: med.name,
+        dosage: med.dosage,
+        frequency: med.frequency,
+        start_date: med.startDate,
+        notes: med.notes || '—'
+    };
+
+    try {
+        await emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams);
+        window.symptomTracker?.showToast('Medication email sent ✅');
+    } catch (err) {
+        console.error('EmailJS send error:', err);
+        window.symptomTracker?.showToast('Failed to send email', 'error');
+    }
+}
+
+// Global handler for the Med form submit
+window.addMedication = async function(event) {
+    event.preventDefault();
+
+    // Grab values from the form
+    const name       = document.getElementById('med-name')?.value?.trim();
+    const dosage     = document.getElementById('med-dosage')?.value?.trim();
+    const frequency  = document.getElementById('med-frequency')?.value;
+    const startDate  = document.getElementById('med-start-date')?.value;
+    const notes      = document.getElementById('med-notes')?.value?.trim();
+    const notifyBox  = document.getElementById('enable-med-notifications');
+
+    if (!name || !dosage || !frequency || !startDate) {
+        window.symptomTracker?.showToast('Please fill the required fields', 'error');
+        return;
+    }
+
+    // Add to your app’s local storage list (existing class method)
+    const med = window.symptomTracker.addMedication({
+        name, dosage, frequency, startDate, notes,
+        notificationsEnabled: !!notifyBox?.checked
+    });
+
+    // OPTIONAL: send the EmailJS notification immediately on add
+    // (If you want a separate “Email me” checkbox, just add one and check it here.)
+    await sendMedicationEmail(med, window.symptomTracker?.currentUser);
+
+    // Clear the form UI
+    document.getElementById('medication-form').reset();
+    window.symptomTracker?.showToast('Medication added');
+};
+
+// Small helpers used by your medication cards’ buttons:
+window.toggleMedicationNotifications = function(medId) {
+    const idx = window.symptomTracker.medications.findIndex(m => m.id === medId);
+    if (idx === -1) return;
+    const med = window.symptomTracker.medications[idx];
+    med.notificationsEnabled = !med.notificationsEnabled;
+
+    if (!med.notificationsEnabled) {
+        window.symptomTracker.clearMedicationReminder(medId);
+    } else {
+        window.symptomTracker.setupMedicationReminder(med);
+    }
+    window.symptomTracker.saveMedicationsToStorage();
+    window.symptomTracker.renderMedications();
+};
+
+window.deleteMedication = function(medId) {
+    window.symptomTracker.deleteMedication(medId);
+};
