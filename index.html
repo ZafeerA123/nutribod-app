@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
     <script src="https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <script>
     // Debug jsPDF loading
     window.addEventListener('load', function() {
@@ -172,6 +173,10 @@
             <button class="tab-btn" onclick="switchTab('reports')" data-tab="reports">
                 <span class="tab-icon"></span>
                 <span>Reports</span>
+            </button>
+            <button class="tab-btn" onclick="switchTab('medication')" data-tab="medication">
+                <span class="tab-icon">💊</span>
+                <span>Medications</span>
             </button>
         </div>
     </nav>
@@ -679,7 +684,7 @@
                         <p>Set up an appointment above to see your personalized visit summary with life impact analysis</p>
                     </div>
                     <button class="btn-primary" onclick="generateVisitSummary()">
-                        <span class="btn-icon">✨</span>
+                        <span class="btn-icon"></span>
                         Generate Visit Summary
                     </button>
                 </div>
@@ -729,6 +734,92 @@
                 </div>
             </div>
         </div>
+    
+   <!-- Medication Tracker Tab -->
+    <div id="medication-tab" class="tab-content">
+        <div class="container">
+            <div class="section-header">
+                <h2>💊 Medication Tracker</h2>
+                <p>Track your medications, dosages, and schedules</p>
+            </div>
+
+            <!-- Add New Medication Card -->
+            <div class="glass-card">
+                <h3 style="margin-bottom: 20px;">➕ Add New Medication</h3>
+                <form id="medication-form" onsubmit="addMedication(event)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Medication Name *</label>
+                            <input type="text" id="med-name" class="form-input" 
+                                placeholder="e.g., Ibuprofen" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Dosage *</label>
+                            <input type="text" id="med-dosage" class="form-input" 
+                                placeholder="e.g., 200mg" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Frequency *</label>
+                            <select id="med-frequency" class="form-input" required>
+                                <option value="">Select frequency...</option>
+                                <option value="Once daily">Once daily</option>
+                                <option value="Twice daily">Twice daily</option>
+                                <option value="Three times daily">Three times daily</option>
+                                <option value="Four times daily">Four times daily</option>
+                                <option value="Every 4 hours">Every 4 hours</option>
+                                <option value="Every 6 hours">Every 6 hours</option>
+                                <option value="Every 8 hours">Every 8 hours</option>
+                                <option value="As needed">As needed</option>
+                                <option value="Weekly">Weekly</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Start Date *</label>
+                            <input type="date" id="med-start-date" class="form-input" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Notes (Optional)</label>
+                        <textarea id="med-notes" class="form-input" rows="3" 
+                                placeholder="Additional notes, side effects, or instructions..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>📧 Email this medication to:</label>
+                        <input type="email" id="med-recipient-email" class="form-input" 
+                            placeholder="doctor@example.com (optional)">
+                        <small style="color: var(--text-secondary); font-size: 0.85rem;">
+                            Leave blank to skip email notification
+                        </small>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">
+                            💊 Add Medication
+                        </button>
+                        <button type="button" class="btn-secondary" onclick="resetMedicationForm()">
+                            Clear Form
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Current Medications List -->
+            <div class="glass-card" style="margin-top: 30px;">
+                <h3 style="margin-bottom: 20px;">📋 Current Medications</h3>
+                <div id="medications-list" class="medications-grid">
+                    <p style="text-align: center; color: var(--text-secondary); padding: 20px;">
+                        No medications added yet. Add your first medication above!
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Floating Action Button -->
     <div class="fab" onclick="quickLogSymptom()">
@@ -954,6 +1045,42 @@
         };
 
         console.log('Firebase Authentication initialized');
+    // Initialize EmailJS
+    (function() {
+        emailjs.init("ymQ9C5txGGzWyjQ8Y");
+        console.log('EmailJS initialized successfully');
+    })();
+
+    // Global email sending function
+    window.sendMedicationEmail = async function(medicationData, recipientEmail) {
+        try {
+            const templateParams = {
+                to_email: recipientEmail,
+                user_name: window.symptomTracker?.currentUser?.displayName || 
+                        window.symptomTracker?.currentUser?.email?.split('@')[0] || 
+                        'User',
+                medication_name: medicationData.name,
+                dosage: medicationData.dosage,
+                frequency: medicationData.frequency,
+                start_date: new Date(medicationData.startDate).toLocaleDateString(),
+                notes: medicationData.notes || 'No additional notes'
+            };
+
+            console.log('Sending email with params:', templateParams);
+            
+            const response = await emailjs.send(
+                'service_MED_APP',
+                'template_MedPrep',
+                templateParams
+            );
+            
+            console.log('Email sent successfully!', response.status, response.text);
+            return { success: true, message: 'Email sent successfully!' };
+        } catch (error) {
+            console.error('Email sending failed:', error);
+            return { success: false, message: 'Failed to send email: ' + error.text };
+        }
+    };
     </script>
 </body>
 </html>
