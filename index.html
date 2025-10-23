@@ -737,6 +737,24 @@
                     </button>
                 </div>
 
+                <div style="margin-top: 30px; padding-top: 30px; border-top: 1px solid rgba(255,255,255,0.1);">
+                        <h3 style="margin-bottom: 15px;">📧 Email Summary Report</h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 20px;">
+                            Send a comprehensive health summary to yourself or your healthcare provider
+                        </p>
+                        
+                        <div class="form-group">
+                            <label class="form-label">📨 Recipient Email Address</label>
+                            <input type="email" id="email-report-recipient" class="form-input" 
+                                   placeholder="doctor@example.com or your email">
+                        </div>
+                        
+                        <button class="btn-primary" onclick="emailSummaryReport()" style="width: 100%;">
+                            <span class="btn-icon">📧</span>
+                            Email Summary Report
+                        </button>
+                    </div>
+
                 <div class="report-preview-card glass-card">
                     <h3>Report Preview</h3>
                     <div id="report-preview" class="report-preview">
@@ -806,12 +824,15 @@
                     </div>
 
                     <div class="form-group">
-                        <label> Email this medication to:</label>
-                        <input type="email" id="med-recipient-email" class="form-input" 
-                               placeholder="doctor@example.com (optional)">
-                        <small style="color: var(--text-secondary); font-size: 0.85rem;">
-                            Leave blank to skip email notification
-                        </small>
+                        <div style="background: rgba(79, 172, 254, 0.1); padding: 15px; border-radius: 8px; border-left: 3px solid #4facfe;">
+                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                <input type="checkbox" id="enable-notifications" style="width: 18px; height: 18px; cursor: pointer;">
+                                <span style="font-weight: 600;"> Enable browser notifications for this medication</span>
+                            </label>
+                            <small style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 8px; display: block; margin-left: 28px;">
+                                Get pop-up reminders based on your medication schedule
+                            </small>
+                        </div>
                     </div>
 
                     <div class="form-actions">

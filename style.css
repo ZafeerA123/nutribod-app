@@ -1759,3 +1759,30 @@ select.form-input option {
     from { transform: translate(-50%, -50%) rotate(0deg); }
     to { transform: translate(-50%, -50%) rotate(360deg); }
 }
+
+/* Notification Toggle Button Styles */
+.med-notify-btn {
+    background: rgba(156, 163, 175, 0.2);
+    color: #9ca3af;
+}
+
+.med-notify-btn:hover {
+    background: rgba(156, 163, 175, 0.3);
+    color: #d1d5db;
+}
+
+.med-notify-active {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    animation: pulse 2s infinite;
+}
+
+.med-notify-active:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; }
+}
