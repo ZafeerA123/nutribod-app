@@ -283,7 +283,8 @@ class SymptomTracker {
             console.error('Error loading user data:', error);
             this.showToast('Error loading your data', 'error');
         }
-        this.loadMedicationsFromStorage();  // ADD THIS LINE
+        this.loadMedicationsFromStorage();  
+        this.updateAppointmentSummary();
     }
 
     selectBodyPart(region) {
@@ -1532,6 +1533,25 @@ class SymptomTracker {
                     </ul>
                 </div>
             </div>
+
+            <div style="background: rgba(255,255,255,0.05); padding: 25px; border-radius: 12px; margin-bottom: 20px;">
+                <h4 style="color: #c4b5fd; margin-bottom: 15px; font-size: 1.1rem;">
+                    💊 Current Medications
+                </h4>
+                ${this.medications && this.medications.length > 0 ? `
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        ${this.medications.map(med => `
+                            <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; border-left: 3px solid #667eea;">
+                                <strong style="color: #c4b5fd; font-size: 1em;">${med.name}</strong> - ${med.dosage}<br>
+                                <span style="color: rgba(255,255,255,0.7); font-size: 0.9em;">
+                                    🔄 ${med.frequency} | 📅 Started: ${new Date(med.startDate).toLocaleDateString()}
+                                </span>
+                                ${med.notes ? `<br><span style="color: rgba(255,255,255,0.6); font-size: 0.85em; font-style: italic;">📝 ${med.notes}</span>` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : '<p style="color: rgba(255,255,255,0.6);">No medications currently tracked</p>'}
+            </div>
             
             <button class="btn-primary" onclick="window.symptomTracker.downloadMedicalReport()" style="width: 100%;">
                 <span class="btn-icon">📥</span>
@@ -1702,6 +1722,42 @@ class SymptomTracker {
             });
         }
 
+        // Medications Section
+        if (this.medications && this.medications.length > 0) {
+            checkNewPage(50);
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
+            doc.text('CURRENT MEDICATIONS', margin, yPosition);
+            yPosition += 15;
+
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+
+            this.medications.forEach((med, index) => {
+                checkNewPage(25);
+                
+                doc.setFont('helvetica', 'bold');
+                doc.text(`${index + 1}. ${med.name}`, margin, yPosition);
+                yPosition += 6;
+                
+                doc.setFont('helvetica', 'normal');
+                doc.text(`   Dosage: ${med.dosage}`, margin + 5, yPosition);
+                yPosition += 5;
+                doc.text(`   Frequency: ${med.frequency}`, margin + 5, yPosition);
+                yPosition += 5;
+                doc.text(`   Started: ${new Date(med.startDate).toLocaleDateString()}`, margin + 5, yPosition);
+                yPosition += 5;
+                
+                if (med.notes) {
+                    const notesLines = doc.splitTextToSize(`   Notes: ${med.notes}`, pageWidth - 2 * margin - 10);
+                    doc.text(notesLines, margin + 5, yPosition);
+                    yPosition += (notesLines.length * 5);
+                }
+                
+                yPosition += 8;
+            });
+        }
+
         // Disclaimer
         checkNewPage(30);
         yPosition += 10;
@@ -1716,43 +1772,61 @@ class SymptomTracker {
     downloadTextReport() {
         const timeframe = document.getElementById('report-timeframe')?.value || '1month';
         const reportData = this.getReportData(timeframe);
+
+        // Add medications to text report
+        content += `
+    CURRENT MEDICATIONS
+    ===================
+    `;
+            if (this.medications && this.medications.length > 0) {
+                this.medications.forEach((med, index) => {
+                    content += `
+    ${index + 1}. ${med.name} - ${med.dosage}
+    Frequency: ${med.frequency}
+    Started: ${new Date(med.startDate).toLocaleDateString()}
+    ${med.notes ? `Notes: ${med.notes}` : ''}
+    `;
+                });
+            } else {
+                content += 'No medications currently tracked\n';
+            }
         
         let content = `MEDICAL SYMPTOM REPORT
-Generated: ${new Date().toLocaleString()}
-Time Period: ${this.getTimeframeLabel(timeframe)}
-Patient: ${this.currentUser?.email || 'Demo User'}
+        Generated: ${new Date().toLocaleString()}
+        Time Period: ${this.getTimeframeLabel(timeframe)}
+        Patient: ${this.currentUser?.email || 'Demo User'}
 
-SUMMARY STATISTICS
-==================
-Total Symptoms: ${reportData.totalCount}
-Average Severity: ${reportData.avgSeverity}/10
-Severity Range: ${reportData.minSeverity}/10 - ${reportData.maxSeverity}/10
+        SUMMARY STATISTICS
+        ==================
+        Total Symptoms: ${reportData.totalCount}
+        Average Severity: ${reportData.avgSeverity}/10
+        Severity Range: ${reportData.minSeverity}/10 - ${reportData.maxSeverity}/10
 
-DETAILED SYMPTOM LOG
-===================
-`;
+        DETAILED SYMPTOM LOG
+        ===================
+        `;
 
-        reportData.symptoms
-            .sort((a, b) => new Date(b.datetime) - new Date(a.datetime))
-            .slice(0, 10)
-            .forEach((symptom, index) => {
+                reportData.symptoms
+                    .sort((a, b) => new Date(b.datetime) - new Date(a.datetime))
+                    .slice(0, 10)
+                    .forEach((symptom, index) => {
+                        content += `
+        ${index + 1}. ${new Date(symptom.datetime).toLocaleString()}
+        Location: ${symptom.region.replace('-', ' ')}
+        Type: ${symptom.type}
+        Severity: ${symptom.severity}/10
+        Description: ${symptom.description}
+        ${symptom.notes ? `Notes: ${symptom.notes}` : ''}
+        ${symptom.photoBase64 ? '[Photo included in PDF version]' : ''}
+        `;
+                    });
+
                 content += `
-${index + 1}. ${new Date(symptom.datetime).toLocaleString()}
-Location: ${symptom.region.replace('-', ' ')}
-Type: ${symptom.type}
-Severity: ${symptom.severity}/10
-Description: ${symptom.description}
-${symptom.notes ? `Notes: ${symptom.notes}` : ''}
-${symptom.photoBase64 ? '[Photo included in PDF version]' : ''}
-`;
-            });
+        ==================
+        This report contains ${reportData.totalCount} total symptoms.
+        For complete data with photos, use PDF export.
 
-        content += `
-==================
-This report contains ${reportData.totalCount} total symptoms.
-For complete data with photos, use PDF export.
-
-Generated by MedPrep Tracker`;
+        Generated by MedPrep Tracker`;
 
         const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
         const url = window.URL.createObjectURL(blob);
@@ -2051,6 +2125,40 @@ Generated by MedPrep Tracker`;
             this.showLoadingOverlay(false);
         }
     }
+    updateAppointmentSummary() {
+        const summarySymptoms = document.getElementById('summary-symptoms');
+        const summaryRegions = document.getElementById('summary-regions');
+        const summaryObservations = document.getElementById('summary-observations');
+        const summaryMedications = document.getElementById('summary-medications');
+        
+        // Update medications summary
+        if (summaryMedications) {
+            if (this.medications && this.medications.length > 0) {
+                summaryMedications.innerHTML = this.medications
+                    .map(med => `
+                        <div style="padding: 8px; margin-bottom: 8px; background: rgba(255,255,255,0.05); border-radius: 6px; border-left: 2px solid #667eea;">
+                            <strong style="color: #c4b5fd;">${med.name}</strong> - ${med.dosage}<br>
+                            <small style="color: rgba(255,255,255,0.7);">🔄 ${med.frequency}</small>
+                        </div>
+                    `).join('');
+            } else {
+                summaryMedications.innerHTML = '<p style="color: rgba(255,255,255,0.6); font-size: 0.9em;">No medications tracked</p>';
+            }
+        }
+        
+        // Keep existing summary updates if they exist
+        if (this.symptoms.length > 0) {
+            const recent = this.symptoms.slice(0, 5);
+            if (summarySymptoms) {
+                summarySymptoms.innerHTML = recent.map(s => `
+                    <div style="padding: 6px; margin-bottom: 6px; background: rgba(255,255,255,0.03); border-radius: 4px;">
+                        <strong>${s.type}</strong> - ${s.region.replace('-', ' ')}
+                        <br><small style="color: rgba(255,255,255,0.6);">${new Date(s.datetime).toLocaleDateString()}</small>
+                    </div>
+                `).join('');
+            }
+        }
+    }
     // ==================== MEDICATION MANAGEMENT ====================
     
     addMedication(medicationData) {
@@ -2068,6 +2176,7 @@ Generated by MedPrep Tracker`;
         
         this.medications.push(medication);
         this.saveMedicationsToStorage();
+        this.updateAppointmentSummary();
         this.renderMedications();
         
         return medication;
@@ -2077,6 +2186,7 @@ Generated by MedPrep Tracker`;
         if (confirm('Are you sure you want to delete this medication?')) {
             this.medications = this.medications.filter(med => med.id !== medicationId);
             this.saveMedicationsToStorage();
+            this.updateAppointmentSummary();
             this.renderMedications();
             this.showToast('Medication deleted successfully', 'success');
         }
