@@ -2442,44 +2442,73 @@ async function emailReport() {
     }
     
     if (window.symptomTracker.symptoms.length === 0) {
-        window.symptomTracker.showToast('No symptoms to report', 'error');
+        window.symptomTracker.showToast('No data to report', 'error');
         return;
     }
     
     window.symptomTracker.showLoadingOverlay(true);
     
     try {
-        // Get report data
+        // Get FULL report data
         const timeframe = document.getElementById('report-timeframe')?.value || '1month';
         const reportData = window.symptomTracker.getReportData(timeframe);
         
-        // Format symptoms for email
-        const symptomsText = reportData.symptoms.slice(0, 10).map(s => 
-            `• ${new Date(s.datetime).toLocaleDateString()}: ${s.type} in ${s.region.replace('-', ' ')} (Severity: ${s.severity}/10)`
-        ).join('\n');
+        // Format symptoms for email (top 15)
+        const symptomsText = reportData.symptoms.slice(0, 15).map((s, index) => 
+            `${index + 1}. ${new Date(s.datetime).toLocaleDateString()} - ${s.type} in ${s.region.replace('-', ' ')} (Severity: ${s.severity}/10)\n   ${s.description}`
+        ).join('\n\n');
         
-        // Prepare email data
         // Format medications for email
         const medicationsText = window.symptomTracker.medications && window.symptomTracker.medications.length > 0
-            ? window.symptomTracker.medications.map(m => 
-                `• ${m.name} - ${m.dosage}, ${m.frequency}`
-              ).join('\n')
-            : 'No medications tracked';
+            ? window.symptomTracker.medications.map((m, index) => 
+                `${index + 1}. ${m.name} - ${m.dosage}\n   Frequency: ${m.frequency}\n   Started: ${new Date(m.startDate).toLocaleDateString()}${m.notes ? '\n   Notes: ' + m.notes : ''}`
+              ).join('\n\n')
+            : 'No medications currently tracked';
         
+        // Generate key insights
+        const topRegion = Object.keys(reportData.regionStats).length > 0 ? 
+            Object.keys(reportData.regionStats).reduce((a, b) => 
+                reportData.regionStats[a] > reportData.regionStats[b] ? a : b
+            ).replace('-', ' ').toUpperCase() : 'N/A';
+        
+        const topType = Object.keys(reportData.typeStats).length > 0 ?
+            Object.keys(reportData.typeStats).reduce((a, b) => 
+                reportData.typeStats[a] > reportData.typeStats[b] ? a : b
+            ).toUpperCase() : 'N/A';
+        
+        const significantImpacts = Object.entries(reportData.impactStats)
+            .filter(([key, count]) => count >= 2)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 3)
+            .map(([area, count]) => `${area}: ${count} times`)
+            .join(', ');
+        
+        const keyInsights = `
+- Most affected area: ${topRegion} (${reportData.regionStats[topRegion] || 0} occurrences)
+- Most common symptom: ${topType} (${reportData.typeStats[topType] || 0} times)
+- Pain range: ${reportData.minSeverity}/10 to ${reportData.maxSeverity}/10
+${significantImpacts ? `• Life impact areas: ${significantImpacts}` : ''}
+${reportData.sleepCorrelation ? '• Sleep-symptom correlation detected' : ''}
+        `.trim();
+        
+        // Prepare email data
         const templateParams = {
             to_email: recipientEmail,
             user_name: window.symptomTracker.currentUser?.displayName || 
                       window.symptomTracker.currentUser?.email?.split('@')[0] || 'User',
+            user_email: window.symptomTracker.currentUser?.email || 'demo@medprep.com',
             report_period: window.symptomTracker.getTimeframeLabel ? 
                           window.symptomTracker.getTimeframeLabel(timeframe) : 'Selected period',
+            generated_date: new Date().toLocaleString(),
             total_symptoms: reportData.totalCount,
             avg_severity: reportData.avgSeverity,
+            max_severity: reportData.maxSeverity,
             symptoms_summary: symptomsText || 'No symptoms in this period',
             medications_list: medicationsText,
-            generated_date: new Date().toLocaleDateString()
+            key_insights: keyInsights
         };
         
-        console.log('Sending email report...');
+        console.log('Sending comprehensive email report...');
         
         const response = await emailjs.send(
             'service_MED_APP',
@@ -2488,7 +2517,7 @@ async function emailReport() {
         );
         
         console.log('Email sent successfully!', response);
-        window.symptomTracker.showToast('Summary report emailed successfully! 📧', 'success');
+        window.symptomTracker.showToast('Complete medical report emailed successfully! 📧✅', 'success');
         document.getElementById('email-report-recipient').value = '';
         
     } catch (error) {
