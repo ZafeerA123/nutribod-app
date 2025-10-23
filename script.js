@@ -2699,3 +2699,100 @@ window.toggleMedicationNotifications = function(medId) {
 window.deleteMedication = function(medId) {
     window.symptomTracker.deleteMedication(medId);
 };
+
+// Check and display notification status
+function checkNotificationStatus() {
+    if (!('Notification' in window)) {
+        alert('❌ Notifications Not Supported\n\nYour browser doesn\'t support notifications. Try using Chrome, Firefox, or Edge.');
+        return;
+    }
+    
+    const permission = Notification.permission;
+    let message = '';
+    let canOpenSettings = false;
+    
+    switch(permission) {
+        case 'granted':
+            message = '✅ NOTIFICATIONS ENABLED\n\n';
+            message += 'Your browser is set up correctly!\n\n';
+            message += 'You will receive notifications for:\n';
+            message += '• Symptom logging confirmations\n';
+            message += '• Medication reminders (when enabled)\n\n';
+            message += '⚠️ Remember: Keep this tab open for medication reminders to work.';
+            break;
+            
+        case 'denied':
+            message = '❌ NOTIFICATIONS BLOCKED\n\n';
+            message += 'You previously blocked notifications for this site.\n\n';
+            message += 'To enable notifications:\n';
+            message += '1. Click the lock/info icon in your browser\'s address bar\n';
+            message += '2. Find "Notifications" permission\n';
+            message += '3. Change it to "Allow"\n';
+            message += '4. Refresh the page\n\n';
+            canOpenSettings = true;
+            break;
+            
+        case 'default':
+            message = '⚠️ NOTIFICATIONS NOT SET UP\n\n';
+            message += 'Click "Enable Notifications" button to get started.\n\n';
+            message += 'You\'ll see a browser popup asking for permission.';
+            break;
+    }
+    
+    // Add device-specific info
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    
+    if (isMobile) {
+        message += '\n\n📱 MOBILE DEVICE DETECTED:';
+        if (isIOS) {
+            message += '\n⚠️ iOS Safari has limited notification support. Consider using Chrome or Firefox on Android for best experience.';
+        } else {
+            message += '\n✅ Android detected - notifications should work great!';
+        }
+    }
+    
+    alert(message);
+    
+    // Optionally offer to open settings (Chrome/Edge only)
+    if (canOpenSettings && permission === 'denied') {
+        const openSettings = confirm('Would you like to try opening your browser settings? (May not work on all browsers)');
+        if (openSettings) {
+            // Try to open Chrome settings
+            const settingsURL = 'chrome://settings/content/siteDetails?site=' + encodeURIComponent(window.location.origin);
+            window.open(settingsURL, '_blank');
+        }
+    }
+}
+
+// Enhanced notification permission request with feedback
+async function requestNotificationPermission() {
+    if (!('Notification' in window)) {
+        alert('❌ Your browser doesn\'t support notifications.\n\nTry using Chrome, Firefox, or Edge.');
+        return false;
+    }
+    
+    // Check current permission
+    if (Notification.permission === 'granted') {
+        showTestNotification();
+        window.symptomTracker?.showToast('✅ Notifications already enabled!', 'success');
+        return true;
+    }
+    
+    if (Notification.permission === 'denied') {
+        alert('❌ Notifications are blocked for this site.\n\nPlease click "Check My Browser Settings" for instructions on how to enable them.');
+        return false;
+    }
+    
+    // Request permission
+    const permission = await Notification.requestPermission();
+    
+    if (permission === 'granted') {
+        showTestNotification();
+        window.symptomTracker?.showToast('✅ Notifications enabled successfully!', 'success');
+        return true;
+    } else {
+        alert('❌ Notification permission denied.\n\nYou can enable notifications later from your browser settings.');
+        return false;
+    }
+}

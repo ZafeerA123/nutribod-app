@@ -488,10 +488,25 @@
                                 <button class="btn-secondary" onclick="clearForm()">Clear</button>
                             </div>
                         </div>
-                        <button type="button" class="btn-secondary" onclick="requestNotificationPermission()" 
-                                    style="margin-top: 10px;">
+                        <div class="notification-section" style="margin-top: 15px; padding: 15px; background: rgba(79, 172, 254, 0.1); border-radius: 12px; border-left: 3px solid #4facfe;">
+                            <button type="button" class="btn-secondary" onclick="requestNotificationPermission()" 
+                                    style="width: 100%; margin-bottom: 10px;">
                                 🔔 Enable Notifications
                             </button>
+                            <div style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.7); line-height: 1.5;">
+                                <strong style="color: #4facfe;">ℹ️ How Notifications Work:</strong>
+                                <ul style="margin: 8px 0 0 20px; padding: 0;">
+                                    <li>✅ Works on <strong>Android phones</strong> (Chrome, Firefox, Edge)</li>
+                                    <li>✅ Works on <strong>Desktop/Laptop</strong> browsers</li>
+                                    <li>⚠️ <strong>Tab must stay open</strong> for reminders to work</li>
+                                    <li>❌ Limited support on <strong>iOS/iPhone Safari</strong></li>
+                                    <li>💡 You'll receive popups for symptom logs and medication reminders</li>
+                                </ul>
+                                <button onclick="checkNotificationStatus()" class="btn-secondary" style="width: 100%; margin-top: 10px; font-size: 0.85rem; padding: 8px;">
+                                    🔍 Check My Browser Settings
+                                </button>
+                            </div>
+                        </div>
                     </div>
                     
                     <div id="instruction-text" class="instruction-card">
@@ -749,9 +764,14 @@
                             <small style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 8px; display: block; margin-left: 28px;">
                                 Get pop-up reminders based on your medication schedule
                             </small>
+                            <div style="margin-top: 10px; margin-left: 28px; padding: 8px; background: rgba(245, 158, 11, 0.1); border-radius: 6px; border-left: 2px solid rgba(245, 158, 11, 0.5);">
+                                <small style="color: rgba(255, 193, 7, 0.9); font-size: 0.8rem;">
+                                    ⚠️ <strong>Important:</strong> Keep this browser tab open for reminders to work.<br>
+                                    ✅ Works on Android phones & desktop browsers | ❌ Limited iOS support
+                                </small>
+                            </div>
                         </div>
                     </div>
-
                     <div class="form-actions">
                         <button type="submit" class="btn-primary">
                             Add Medication
