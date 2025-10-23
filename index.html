@@ -108,7 +108,7 @@
                 <div class="auth-divider"><span>or</span></div>
                 
                 <button class="auth-btn email-toggle-btn" onclick="toggleEmailAuth()">
-                    <span class="auth-icon">📧</span>
+                    <span class="auth-icon"></span>
                     Sign in with Email
                 </button>
                 
@@ -175,7 +175,7 @@
                 <span>Reports</span>
             </button>
             <button class="tab-btn" onclick="switchTab('medication')" data-tab="medication">
-                <span class="tab-icon">💊</span>
+                <span class="tab-icon"></span>
                 <span>Medications</span>
             </button>
         </div>
@@ -388,7 +388,7 @@
                             </div>
 
                             <div class="impact-category">
-                                <h4>😴 Sleep Quality</h4>
+                                <h4>Sleep Quality</h4>
                                 <div class="radio-group">
                                     <label class="radio-option">
                                         <input type="radio" name="sleep-impact" value="none">
@@ -414,7 +414,7 @@
                             </div>
 
                             <div class="impact-category">
-                                <h4>👥 Social Activities</h4>
+                                <h4>Social Activities</h4>
                                 <div class="radio-group">
                                     <label class="radio-option">
                                         <input type="radio" name="social-impact" value="none">
@@ -440,7 +440,7 @@
                             </div>
 
                             <div class="impact-category">
-                                <h4>🏃 Physical Activity</h4>
+                                <h4>Physical Activity</h4>
                                 <div class="radio-group">
                                     <label class="radio-option">
                                         <input type="radio" name="physical-impact" value="none">
@@ -466,7 +466,7 @@
                             </div>
 
                             <div class="impact-category">
-                                <h4>🧠 Mental Health</h4>
+                                <h4>Mental Health</h4>
                                 <div class="radio-group">
                                     <label class="radio-option">
                                         <input type="radio" name="mental-impact" value="none">
@@ -509,14 +509,14 @@
         <!-- Sleep Tracker Tab -->
         <div id="sleep" class="tab-content">
             <div class="section-header">
-                <h2>😴 Sleep Tracker</h2>
+                <h2>Sleep Tracker</h2>
                 <p>Track your sleep patterns and quality</p>
             </div>
 
             <div class="sleep-grid">
                 <!-- Sleep Log Form -->
                 <div class="glass-card">
-                    <div class="card-icon">🌙</div>
+                    <div class="card-icon"></div>
                     <h3>Log Sleep Session</h3>
                     
                     <form id="sleep-form" onsubmit="logSleep(event)">
@@ -568,7 +568,7 @@
 
                 <!-- Sleep History -->
                 <div class="glass-card">
-                    <div class="card-icon">📊</div>
+                    <div class="card-icon"></div>
                     <h3>Recent Sleep Sessions</h3>
                     <div id="sleep-history" class="sleep-history-container">
                         <p style="text-align: center; color: var(--text-secondary); padding: 20px;">
@@ -582,7 +582,7 @@
         <!-- History Tab -->
         <div id="history" class="tab-content">
             <div class="section-header">
-                <h2>📋 Symptom History</h2>
+                <h2>Symptom History</h2>
                 <p>View and manage your symptom timeline</p>
             </div>
 
@@ -618,7 +618,7 @@
         <!-- Appointment Prep Tab -->
         <div id="appointment" class="tab-content">
             <div class="section-header">
-                <h2>👨‍⚕️ Appointment Preparation</h2>
+                <h2>Appointment Preparation</h2>
                 <p>Get ready for your doctor's visit with organized information</p>
             </div>
 
@@ -659,7 +659,7 @@
                 </div>
 
                 <div class="glass-card">
-                    <div class="card-icon">📝</div>
+                    <div class="card-icon"></div>
                     <h3>Pre-Appointment Summary</h3>
                     
                     <div id="appointment-summary" class="appointment-summary">
@@ -711,7 +711,7 @@
             
             <div class="report-container" style="max-width: 800px; margin: 0 auto;">
                 <div class="report-settings glass-card" style="margin-bottom: 30px;">
-                    <div class="card-icon">⚙️</div>
+                    <div class="card-icon"></div>
                     <h3>Report Settings</h3>
                     
                     <div class="form-group">
@@ -749,13 +749,13 @@
         <!-- Medication Tracker Tab -->
         <div id="medication" class="tab-content">
             <div class="section-header">
-                <h2>💊 Medication Tracker</h2>
+                <h2>Medication Tracker</h2>
                 <p>Track your medications, dosages, and schedules</p>
             </div>
 
             <!-- Add New Medication Card -->
             <div class="glass-card">
-                <h3 style="margin-bottom: 20px;">➕ Add New Medication</h3>
+                <h3 style="margin-bottom: 20px;"> Add New Medication</h3>
                 <form id="medication-form" onsubmit="addMedication(event)">
                     <div class="form-row">
                         <div class="form-group">
@@ -800,7 +800,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label>📧 Email this medication to:</label>
+                        <label> Email this medication to:</label>
                         <input type="email" id="med-recipient-email" class="form-input" 
                                placeholder="doctor@example.com (optional)">
                         <small style="color: var(--text-secondary); font-size: 0.85rem;">
@@ -821,7 +821,7 @@
 
             <!-- Current Medications List -->
             <div class="glass-card" style="margin-top: 30px;">
-                <h3 style="margin-bottom: 20px;">📋 Current Medications</h3>
+                <h3 style="margin-bottom: 20px;">Current Medications</h3>
                 <div id="medications-list" class="medications-grid">
                     <p style="text-align: center; color: var(--text-secondary); padding: 20px;">
                         No medications added yet. Add your first medication above!
