@@ -668,38 +668,32 @@
             </div>
         </div>
 
+    <div class="glass-card" style="margin-top: 30px;">
+                    <div class="card-icon">📧</div>
+                    <h3>Email Medication Update</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 20px;">
+                        Send Medication updates to yourself
+                    </p>
+                    
+                    <div class="form-group">
+                        <label class="form-label">📨 Recipient Email Address</label>
+                        <input type="email" id="email-report-recipient" class="form-input" 
+                               placeholder="doctor@example.com">
+                    </div>
+                    
+                    <button class="btn-primary" onclick="emailReport()" style="width: 100%; margin-top: 15px;">
+                        <span class="btn-icon">📧</span>
+                        Email Medication Update
+                    </button>
+                </div>
+            </div>
+        </div>
     <!-- Medications Tab -->
         <div id="medications" class="tab-content">
             <div class="section-header">
                 <h2>Medication Tracker</h2>
                 <p>Track your medications, dosages, and schedules with smart reminders</p>
             </div>
-    <!-- Medications Tab -->
-    <div id="medications" class="tab-content">
-    ...
-    <div class="glass-card" style="margin-top: 30px;">
-        <h3 style="margin-bottom: 20px;">📋 Current Medications</h3>
-        <div id="medications-list" class="medications-grid">...</div>
-    </div>
-
-    <!-- MOVE THE EMAIL CARD HERE -->
-    <div class="glass-card" style="margin-top: 30px;">
-        <div class="card-icon">📧</div>
-        <h3>Email Medication Update</h3>
-        <p style="color: var(--text-secondary); margin-bottom: 20px;">
-        Send Medication updates to yourself
-        </p>
-        <div class="form-group">
-        <label class="form-label">📨 Recipient Email Address</label>
-        <input type="email" id="email-report-recipient" class="form-input" placeholder="doctor@example.com">
-        </div>
-        <button class="btn-primary" onclick="emailReport()" style="width: 100%; margin-top: 15px;">
-        <span class="btn-icon">📧</span>
-        Email Medication Update
-        </button>
-    </div>
-    </div>
-
 
             <!-- Add New Medication Card -->
             <div class="glass-card">
